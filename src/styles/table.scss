@@ -1,0 +1,182 @@
+$border_size: 1.2pt;
+$hourSize: 16pt;
+$hour_width: 30pt;
+
+$weekday_width: 38.1%;
+$saturday_width: 33.33%;
+$sunday_width: 28.57%;
+
+.table {
+  width: inherit;
+
+  border: $border_size solid #000;
+
+  .table_header {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    border-bottom: $border_size solid #000;
+
+    .table_header_hour {
+      padding: 0 7pt;
+      width: $hour_width;
+      font-size: $hourSize;
+    }
+
+    .table_header_col_wrap {
+      display: flex;
+
+      width: 100%;
+
+      .table_header_col {
+        border-left: $border_size solid #000;
+        font-size: 15pt;
+
+        .day_name {
+          font-weight: bold;
+        }
+
+        .day {
+          font-size: 11pt;
+        }
+
+        &.weekday {
+          width: $weekday_width;
+        }
+
+        &.saturday {
+          width: $saturday_width;
+        }
+
+        &.sunday {
+          width: $sunday_width;
+        }
+      }
+    }
+
+    .table_header_hour_right {
+      border-left: $border_size solid #000;
+
+      padding: 0 7pt;
+      width: $hour_width;
+      font-size: $hourSize;
+    }
+  }
+
+  .hour_group {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    text-align: center;
+    border-bottom: $border_size solid #000;
+
+    &:last-child {
+      border-bottom: unset;
+    }
+
+    .hour {
+      padding: 0 4pt;
+      font-size: $hourSize;
+      font-weight: bold;
+      width: $hour_width;
+    }
+
+    .hour_right {
+      border-left: $border_size solid #000;
+      
+      padding: 0 4pt;
+      font-size: $hourSize;
+      font-weight: bold;
+      width: $hour_width;
+
+      .center {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);;
+      }
+    }
+
+    .minutes_group {
+      height: fit-content;
+
+      width: 100%;
+      display: flex;
+
+      .minutes {
+        border-left: $border_size solid #000;
+
+        min-height: 30pt;
+
+        padding: 2pt;
+
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2pt 0pt;
+
+        align-content: flex-start;
+
+        &:empty {
+          gap: unset;
+        }
+
+        &.weekday {
+          width: $weekday_width;
+
+          &_0 {
+            background-color: #efefef;
+          }
+
+          &_1 {
+            background-color: #dcdcdc;
+          }
+        }
+
+        &.saturday {
+          width: $saturday_width;
+
+          &_0 {
+            background-color: #d4ebff;
+          }
+
+          &_1 {
+            background-color: #bce1ff;
+          }
+        }
+
+        &.sunday {
+          width: $sunday_width;
+
+          &_0 {
+            background-color: #ffcee6;
+          }
+
+          &_1 {
+            background-color: #feb5d8;
+          }
+        }
+
+        .minute_wrap {
+          width: 44pt;
+
+          .minute {
+            font-size: 16pt;
+            text-align: center;
+            font-weight: bold;
+
+            &.long_time {
+              text-decoration: underline;
+              font-weight: 400;
+              color: #333333;
+            }
+          }
+
+          .route_id {
+            display: flex;
+            justify-content: center;
+            margin-top: -4pt;
+          }
+        }
+      }
+    }
+  }
+}
