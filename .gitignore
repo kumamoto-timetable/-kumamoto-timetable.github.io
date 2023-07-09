@@ -1,3 +1,6 @@
 .cache
+.parcel-cache
 
 node_modules
+
+.vscode

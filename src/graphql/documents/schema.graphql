@@ -1,13 +1,46 @@
-query Remotes($where: RemoteSearch!, $pagination: RemotePaginationOptions, $versionsWhere: VersionSearch!, $versionsPagination: VersionPaginationOptions, $versionOrder: VersionOrder) {
-  remotes(where: $where, pagination: $pagination) {
+query Remotes(
+  $where: RemoteSearchConditions!
+  $pagination: RemotePaginationOptions!
+  $versionsPagination: VersionPaginationOptions!
+  $versionOrder: VersionOrder!
+) {
+  findRemotes(conditions: $where, pagination: $pagination) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
     edges {
-      versions(where: $versionsWhere, pagination: $versionsPagination, order: $versionOrder) {
+      versions(pagination: $versionsPagination, order: $versionOrder) {
         edges {
-          ... on VersionErrorInfo {
+          uid
+        }
+      }
+    }
+  }
+}
+
+query NormalizedStops(
+  $pagination: NormalizedStopPaginationOptions!
+  $where: NormalizedStopSearchCondition!
+  $options: NormalizedStopSearchOption!
+  $stopsOptions: StopSearchOption!
+) {
+  searchNormalizedStops(pagination: $pagination, conditions: $where, options: $options) {
+    totalCount
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+    }
+    edges {
+      key
+      name
+      stops(options: $stopsOptions) {
+        edges {
+          ... on StopInfo {
             uid
-          }
-          ... on VersionInfo {
-            uid
+            id
+            name
           }
         }
       }
@@ -15,53 +48,47 @@ query Remotes($where: RemoteSearch!, $pagination: RemotePaginationOptions, $vers
   }
 }
 
-query NormalizedStops($where: NormalizedStopSearch!, $pagination: NormalizedStopPagination) {
-  normalizedStops(where: $where, pagination: $pagination) {
-    key
-    stops {
-      ... on StopInfo {
-        uid
-        id
-        name
-      }
+query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: TimetablePaginationOptions!) {
+  timetable(conditions: $conditions, pagination: $pagination) {
+    totalCount
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
     }
-  }
-}
-
-query TimetableForBetweenStops($where: TimetableForBetweenStopsSearch!) {
-  timetableForBetweenStops(where: $where) {
-    ... on StopTimeArrivalInfo {
-      a_departure: departure {
-        time
-      }
-      headsign
-      route {
-        longName
+    edges {
+      ... on StopTimeArrivalInfo {
         uid
+        headsign
+        route {
+          uid
+          longName
+        }
+        a_departure: departure {
+          time
+        }
       }
-      uid
-    }
-    ... on StopTimeDepartureInfo {
-      d_departure: departure {
-        time
-      }
-      headsign
-      route {
-        longName
+      ... on StopTimeDepartureInfo {
         uid
+        headsign
+        route {
+          uid
+          longName
+        }
+        d_departure: departure {
+          time
+        }
       }
-      uid
-    }
-    ... on StopTimeInfo {
-      departure {
-        time
-      }
-      headsign
-      route {
-        longName
+      ... on StopTimeInfo {
         uid
+        headsign
+        route {
+          uid
+          longName
+        }
+        departure {
+          time
+        }
       }
-      uid
     }
   }
 }

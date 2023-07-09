@@ -25,39 +25,6 @@ export type AuthCredential = {
   access_token: Scalars['String'];
 };
 
-export enum ImportErrorCode {
-  FetchError = 'FETCH_ERROR',
-  FetchTimeout = 'FETCH_TIMEOUT',
-  InvalidGtfsFormat = 'INVALID_GTFS_FORMAT',
-  InvalidZipFormat = 'INVALID_ZIP_FORMAT',
-  RemoteAccessDenied = 'REMOTE_ACCESS_DENIED',
-  RemoteNotFound = 'REMOTE_NOT_FOUND',
-  Unknown = 'UNKNOWN'
-}
-
-export enum ImportErrorStatus {
-  Error = 'ERROR'
-}
-
-export enum ImportStatus {
-  Error = 'ERROR',
-  Imported = 'IMPORTED',
-  Initializing = 'INITIALIZING',
-  LinkImporting = 'LINK_IMPORTING',
-  Pending = 'PENDING',
-  RawImporting = 'RAW_IMPORTING',
-  Skip = 'SKIP'
-}
-
-export enum ImportSuccessStatus {
-  Imported = 'IMPORTED',
-  Initializing = 'INITIALIZING',
-  LinkImporting = 'LINK_IMPORTING',
-  Pending = 'PENDING',
-  RawImporting = 'RAW_IMPORTING',
-  Skip = 'SKIP'
-}
-
 export enum Language {
   En = 'en',
   Ja = 'ja'
@@ -78,7 +45,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   generateAccessToken: AccessCredential;
   login: AuthCredential;
-  userRegister: UserInfo;
+  registerUser: UserInfo;
 };
 
 
@@ -87,8 +54,8 @@ export type MutationLoginArgs = {
 };
 
 
-export type MutationUserRegisterArgs = {
-  credential: UserRegisterInput;
+export type MutationRegisterUserArgs = {
+  credential: RegisterUserInput;
 };
 
 export enum NormalizeType {
@@ -99,26 +66,48 @@ export enum NormalizeType {
 export type NormalizedStopInfo = {
   __typename?: 'NormalizedStopInfo';
   key: Scalars['String'];
-  stops: Array<StopUnion>;
+  name: Scalars['String'];
+  stops: StopPagination;
+};
+
+
+export type NormalizedStopInfoStopsArgs = {
+  options: StopSearchOption;
 };
 
 export type NormalizedStopPagination = {
+  __typename?: 'NormalizedStopPagination';
+  edges: Array<NormalizedStopInfo>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
+};
+
+export type NormalizedStopPaginationOptions = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
 };
 
-export type NormalizedStopSearch = {
+export type NormalizedStopSearchCondition = {
   key?: InputMaybe<Scalars['String']>;
-  languages: Array<Language>;
   name?: InputMaybe<Scalars['String']>;
   remoteVersionUids: Array<Scalars['String']>;
-  type: NormalizeType;
+};
+
+export type NormalizedStopSearchOption = {
+  groupBy: NormalizeType;
+  languages: Array<Language>;
 };
 
 export enum Order {
   Asc = 'ASC',
   Desc = 'DESC'
 }
+
+export type PageInfo = {
+  __typename?: 'PageInfo';
+  hasNextPage: Scalars['Boolean'];
+  hasPreviousPage: Scalars['Boolean'];
+};
 
 export type PlatformInfo = {
   __typename?: 'PlatformInfo';
@@ -127,33 +116,33 @@ export type PlatformInfo = {
 
 export type Query = {
   __typename?: 'Query';
-  normalizedStops: Array<NormalizedStopInfo>;
-  remotes: RemotePagination;
-  stops: Array<StopUnion>;
-  timetableForBetweenStops: Array<Array<StopTimeUnion>>;
+  findRemotes: RemotePagination;
+  searchNormalizedStops: NormalizedStopPagination;
+  timetable: TimetablePagination;
 };
 
 
-export type QueryNormalizedStopsArgs = {
-  pagination?: InputMaybe<NormalizedStopPagination>;
-  where: NormalizedStopSearch;
+export type QueryFindRemotesArgs = {
+  conditions: RemoteSearchConditions;
+  pagination: RemotePaginationOptions;
 };
 
 
-export type QueryRemotesArgs = {
-  pagination?: InputMaybe<RemotePaginationOptions>;
-  where: RemoteSearch;
+export type QuerySearchNormalizedStopsArgs = {
+  conditions: NormalizedStopSearchCondition;
+  options: NormalizedStopSearchOption;
+  pagination: NormalizedStopPaginationOptions;
 };
 
 
-export type QueryStopsArgs = {
-  pagination?: InputMaybe<StopPagination>;
-  where: StopSearch;
+export type QueryTimetableArgs = {
+  conditions: TimetableSearch;
+  pagination: TimetablePaginationOptions;
 };
 
-
-export type QueryTimetableForBetweenStopsArgs = {
-  where: TimetableForBetweenStopsSearch;
+export type RegisterUserInput = {
+  email: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export type RemoteInfo = {
@@ -165,14 +154,14 @@ export type RemoteInfo = {
 
 
 export type RemoteInfoVersionsArgs = {
-  order?: InputMaybe<VersionOrder>;
-  pagination?: InputMaybe<VersionPaginationOptions>;
-  where?: InputMaybe<VersionSearch>;
+  order: VersionOrder;
+  pagination: VersionPaginationOptions;
 };
 
 export type RemotePagination = {
   __typename?: 'RemotePagination';
   edges: Array<RemoteInfo>;
+  pageInfo: PageInfo;
   totalCount: Scalars['Int'];
 };
 
@@ -181,7 +170,7 @@ export type RemotePaginationOptions = {
   offset?: InputMaybe<Scalars['Int']>;
 };
 
-export type RemoteSearch = {
+export type RemoteSearchConditions = {
   name?: InputMaybe<Scalars['String']>;
   remoteUids?: InputMaybe<Array<Scalars['String']>>;
 };
@@ -207,14 +196,14 @@ export type StopInfo = {
 };
 
 export type StopPagination = {
-  limit?: InputMaybe<Scalars['Int']>;
-  offset?: InputMaybe<Scalars['Int']>;
+  __typename?: 'StopPagination';
+  edges: Array<StopUnion>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
 };
 
-export type StopSearch = {
+export type StopSearchOption = {
   languages: Array<Language>;
-  name?: InputMaybe<Scalars['String']>;
-  remoteVersionUids: Array<Scalars['String']>;
 };
 
 export type StopTimeArrivalInfo = {
@@ -259,7 +248,7 @@ export enum SupportType {
   FareAttribute = 'FARE_ATTRIBUTE',
   FareRule = 'FARE_RULE',
   FeedInfo = 'FEED_INFO',
-  Frequence = 'FREQUENCE',
+  Frequencie = 'FREQUENCIE',
   Level = 'LEVEL',
   Pathway = 'PATHWAY',
   Route = 'ROUTE',
@@ -276,7 +265,19 @@ export type Time = {
   time: Scalars['String'];
 };
 
-export type TimetableForBetweenStopsSearch = {
+export type TimetablePagination = {
+  __typename?: 'TimetablePagination';
+  edges: Array<Array<StopTimeUnion>>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
+};
+
+export type TimetablePaginationOptions = {
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+};
+
+export type TimetableSearch = {
   date: Scalars['String'];
   transitStopUids: Array<Array<Scalars['String']>>;
 };
@@ -286,58 +287,35 @@ export type UserInfo = {
   email: Scalars['String'];
 };
 
-export type UserRegisterInput = {
-  email: Scalars['String'];
-  password: Scalars['String'];
-};
-
-export type VersionErrorInfo = {
-  __typename?: 'VersionErrorInfo';
-  created_at: Scalars['String'];
-  data_portal_url: Scalars['String'];
-  import_error_code: ImportErrorCode;
-  import_status: ImportErrorStatus;
-  realtime_data_urls: Array<Scalars['String']>;
-  static_data_url: Scalars['String'];
-  support_types: Array<SupportType>;
-  uid: Scalars['String'];
-};
-
 export type VersionInfo = {
   __typename?: 'VersionInfo';
   created_at: Scalars['String'];
   data_portal_url: Scalars['String'];
-  import_status: ImportSuccessStatus;
   realtime_data_urls: Array<Scalars['String']>;
   static_data_url: Scalars['String'];
   support_types: Array<SupportType>;
   uid: Scalars['String'];
 };
 
-export type VersionInfoUnion = VersionErrorInfo | VersionInfo;
-
 export type VersionOrder = {
-  column: VersionOrderColumn;
-  order: Order;
+  column?: InputMaybe<VersionOrderColumn>;
+  order?: InputMaybe<Order>;
 };
 
 export enum VersionOrderColumn {
-  CreatedAt = 'created_at'
+  CreatedAt = 'CREATED_AT'
 }
 
 export type VersionPagination = {
   __typename?: 'VersionPagination';
-  edges: Array<VersionInfoUnion>;
+  edges: Array<VersionInfo>;
+  pageInfo: PageInfo;
   totalCount: Scalars['Int'];
 };
 
 export type VersionPaginationOptions = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
-};
-
-export type VersionSearch = {
-  status?: InputMaybe<Array<ImportStatus>>;
 };
 
 export enum WheelchairBoarding {
@@ -347,48 +325,46 @@ export enum WheelchairBoarding {
 }
 
 export type RemotesQueryVariables = Exact<{
-  where: RemoteSearch;
-  pagination?: InputMaybe<RemotePaginationOptions>;
-  versionsWhere: VersionSearch;
-  versionsPagination?: InputMaybe<VersionPaginationOptions>;
-  versionOrder?: InputMaybe<VersionOrder>;
+  where: RemoteSearchConditions;
+  pagination: RemotePaginationOptions;
+  versionsPagination: VersionPaginationOptions;
+  versionOrder: VersionOrder;
 }>;
 
 
-export type RemotesQuery = { __typename?: 'Query', remotes: { __typename?: 'RemotePagination', edges: Array<{ __typename?: 'RemoteInfo', versions: { __typename?: 'VersionPagination', edges: Array<{ __typename?: 'VersionErrorInfo', uid: string } | { __typename?: 'VersionInfo', uid: string }> } }> } };
+export type RemotesQuery = { __typename?: 'Query', findRemotes: { __typename?: 'RemotePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean }, edges: Array<{ __typename?: 'RemoteInfo', versions: { __typename?: 'VersionPagination', edges: Array<{ __typename?: 'VersionInfo', uid: string }> } }> } };
 
 export type NormalizedStopsQueryVariables = Exact<{
-  where: NormalizedStopSearch;
-  pagination?: InputMaybe<NormalizedStopPagination>;
+  pagination: NormalizedStopPaginationOptions;
+  where: NormalizedStopSearchCondition;
+  options: NormalizedStopSearchOption;
+  stopsOptions: StopSearchOption;
 }>;
 
 
-export type NormalizedStopsQuery = { __typename?: 'Query', normalizedStops: Array<{ __typename?: 'NormalizedStopInfo', key: string, stops: Array<{ __typename?: 'StopInfo', uid: string, id: string, name: string }> }> };
+export type NormalizedStopsQuery = { __typename?: 'Query', searchNormalizedStops: { __typename?: 'NormalizedStopPagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean }, edges: Array<{ __typename?: 'NormalizedStopInfo', key: string, name: string, stops: { __typename?: 'StopPagination', edges: Array<{ __typename?: 'StopInfo', uid: string, id: string, name: string }> } }> } };
 
 export type TimetableForBetweenStopsQueryVariables = Exact<{
-  where: TimetableForBetweenStopsSearch;
+  conditions: TimetableSearch;
+  pagination: TimetablePaginationOptions;
 }>;
 
 
-export type TimetableForBetweenStopsQuery = { __typename?: 'Query', timetableForBetweenStops: Array<Array<{ __typename?: 'StopTimeArrivalInfo', headsign?: string | null, uid: string, a_departure?: { __typename?: 'Time', time: string } | null, route: { __typename?: 'RouteInfo', longName?: string | null, uid: string } } | { __typename?: 'StopTimeDepartureInfo', headsign?: string | null, uid: string, d_departure: { __typename?: 'Time', time: string }, route: { __typename?: 'RouteInfo', longName?: string | null, uid: string } } | { __typename?: 'StopTimeInfo', headsign?: string | null, uid: string, departure: { __typename?: 'Time', time: string }, route: { __typename?: 'RouteInfo', longName?: string | null, uid: string } }>> };
+export type TimetableForBetweenStopsQuery = { __typename?: 'Query', timetable: { __typename?: 'TimetablePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean }, edges: Array<Array<{ __typename?: 'StopTimeArrivalInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, a_departure?: { __typename?: 'Time', time: string } | null } | { __typename?: 'StopTimeDepartureInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, d_departure: { __typename?: 'Time', time: string } } | { __typename?: 'StopTimeInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, departure: { __typename?: 'Time', time: string } }>> } };
 
 
 export const RemotesDocument = gql`
-    query Remotes($where: RemoteSearch!, $pagination: RemotePaginationOptions, $versionsWhere: VersionSearch!, $versionsPagination: VersionPaginationOptions, $versionOrder: VersionOrder) {
-  remotes(where: $where, pagination: $pagination) {
+    query Remotes($where: RemoteSearchConditions!, $pagination: RemotePaginationOptions!, $versionsPagination: VersionPaginationOptions!, $versionOrder: VersionOrder!) {
+  findRemotes(conditions: $where, pagination: $pagination) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
     edges {
-      versions(
-        where: $versionsWhere
-        pagination: $versionsPagination
-        order: $versionOrder
-      ) {
+      versions(pagination: $versionsPagination, order: $versionOrder) {
         edges {
-          ... on VersionErrorInfo {
-            uid
-          }
-          ... on VersionInfo {
-            uid
-          }
+          uid
         }
       }
     }
@@ -400,14 +376,28 @@ export function useRemotesQuery(options: Omit<Urql.UseQueryArgs<RemotesQueryVari
   return Urql.useQuery<RemotesQuery, RemotesQueryVariables>({ query: RemotesDocument, ...options });
 };
 export const NormalizedStopsDocument = gql`
-    query NormalizedStops($where: NormalizedStopSearch!, $pagination: NormalizedStopPagination) {
-  normalizedStops(where: $where, pagination: $pagination) {
-    key
-    stops {
-      ... on StopInfo {
-        uid
-        id
-        name
+    query NormalizedStops($pagination: NormalizedStopPaginationOptions!, $where: NormalizedStopSearchCondition!, $options: NormalizedStopSearchOption!, $stopsOptions: StopSearchOption!) {
+  searchNormalizedStops(
+    pagination: $pagination
+    conditions: $where
+    options: $options
+  ) {
+    totalCount
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+    }
+    edges {
+      key
+      name
+      stops(options: $stopsOptions) {
+        edges {
+          ... on StopInfo {
+            uid
+            id
+            name
+          }
+        }
       }
     }
   }
@@ -418,40 +408,47 @@ export function useNormalizedStopsQuery(options: Omit<Urql.UseQueryArgs<Normaliz
   return Urql.useQuery<NormalizedStopsQuery, NormalizedStopsQueryVariables>({ query: NormalizedStopsDocument, ...options });
 };
 export const TimetableForBetweenStopsDocument = gql`
-    query TimetableForBetweenStops($where: TimetableForBetweenStopsSearch!) {
-  timetableForBetweenStops(where: $where) {
-    ... on StopTimeArrivalInfo {
-      a_departure: departure {
-        time
-      }
-      headsign
-      route {
-        longName
-        uid
-      }
-      uid
+    query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: TimetablePaginationOptions!) {
+  timetable(conditions: $conditions, pagination: $pagination) {
+    totalCount
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
     }
-    ... on StopTimeDepartureInfo {
-      d_departure: departure {
-        time
-      }
-      headsign
-      route {
-        longName
+    edges {
+      ... on StopTimeArrivalInfo {
         uid
+        headsign
+        route {
+          uid
+          longName
+        }
+        a_departure: departure {
+          time
+        }
       }
-      uid
-    }
-    ... on StopTimeInfo {
-      departure {
-        time
-      }
-      headsign
-      route {
-        longName
+      ... on StopTimeDepartureInfo {
         uid
+        headsign
+        route {
+          uid
+          longName
+        }
+        d_departure: departure {
+          time
+        }
       }
-      uid
+      ... on StopTimeInfo {
+        uid
+        headsign
+        route {
+          uid
+          longName
+        }
+        departure {
+          time
+        }
+      }
     }
   }
 }

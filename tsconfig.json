@@ -5,6 +5,7 @@
       "dom"
     ],
     "jsx": "react",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "sourceMap": true
   }
 }

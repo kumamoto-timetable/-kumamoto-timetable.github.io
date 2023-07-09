@@ -6,7 +6,7 @@ import { useReactToPrint } from 'react-to-print'
 
 import { accessTarget } from './access_target'
 
-import { ImportStatus, Language, NormalizeType, Order, useNormalizedStopsQuery, useRemotesQuery, VersionOrderColumn } from '../graphql/generated/graphql'
+import { Language, NormalizeType, Order, useNormalizedStopsQuery, useRemotesQuery, VersionOrderColumn } from '../graphql/generated/graphql'
 import { TimetableTable } from './timetable'
 
 export interface ColourOption {
@@ -41,8 +41,7 @@ function App() {
       where: {
         remoteUids: accessTarget.remoteUids
       },
-      versionsWhere: {
-        status: [ImportStatus.Imported]
+      pagination: {
       },
       versionsPagination: {
         offset: 0,
@@ -54,59 +53,69 @@ function App() {
       }
     }
   })
-  const remoteUids = useMemo(() => remotes.data?.remotes.edges.map(remote => remote.versions.edges[0]?.uid).filter(e => e !== undefined) ?? [], [remotes.data])
+  const remoteUids = useMemo(() => remotes.data?.findRemotes.edges.map(remote => remote.versions.edges[0]?.uid).filter(e => e !== undefined) ?? [], [remotes.data])
 
   const [fromNormalizedStops] = useNormalizedStopsQuery({
     variables: {
       where: {
         remoteVersionUids: remoteUids,
-        type: NormalizeType.Id,
-        languages: [Language.Ja, Language.En],
         name: fromSearchName,
+      },
+      options: {
+        groupBy: NormalizeType.Id,
+        languages: [Language.Ja, Language.En],
+      },
+      stopsOptions: {
+        languages: [Language.Ja, Language.En],
       },
       pagination: {
         limit: 20
       },
     }
   })
-  const fromStops = useMemo(() => (fromNormalizedStops.data?.normalizedStops ?? []).map((stop) => ({ label: stop.stops[0].name, key: stop.key, value: stop.stops.map(s => s.uid) })), [fromNormalizedStops.data])
+  const fromStops = useMemo(() => (fromNormalizedStops.data?.searchNormalizedStops.edges ?? []).map((normalizedStop) => ({ label: normalizedStop.name, key: normalizedStop.key, value: normalizedStop.stops.edges.map(s => s.uid) })), [fromNormalizedStops.data])
   const [toNormalizedStops] = useNormalizedStopsQuery({
     variables: {
       where: {
         remoteVersionUids: remoteUids,
-        type: NormalizeType.Id,
-        languages: [Language.Ja, Language.En],
         name: toSearchName,
+      },
+      options: {
+        groupBy: NormalizeType.Id,
+        languages: [Language.Ja, Language.En],
+      },
+      stopsOptions: {
+        languages: [Language.Ja, Language.En],
       },
       pagination: {
         limit: 20
       },
     }
   })
-  const toStops = useMemo(() => (toNormalizedStops.data?.normalizedStops ?? []).map((stop) => ({ label: stop.stops[0].name, key: stop.key, value: stop.stops.map(s => s.uid) })), [toNormalizedStops.data])
+  const toStops = useMemo(() => (toNormalizedStops.data?.searchNormalizedStops.edges ?? []).map((normalizedStop) => ({ label: normalizedStop.name, key: normalizedStop.key, value: normalizedStop.stops.edges.map(s => s.uid) })), [toNormalizedStops.data])
 
   useEffect(() => {
     if (!fromSearchName || !toSearchName || !fromNormalizedStops.data || !toNormalizedStops.data || userInputted) return
 
-    if (0 < fromNormalizedStops.data.normalizedStops.length) {
-      const stop = fromNormalizedStops.data.normalizedStops[0]
-      setFromSearchName(stop.stops[0].name)
+    if (0 < fromNormalizedStops.data.searchNormalizedStops.totalCount) {
+      const stop = fromNormalizedStops.data.searchNormalizedStops.edges[0]
+      setFromSearchName(stop.name)
       setUserInputted(true)
       setSelectedFromKey({
-        label: stop.stops[0].name,
+        label: stop.name,
         key: stop.key,
-        value: stop.stops.map(s => s.uid)
+        value: stop.stops.edges.map(s => s.uid)
       })
     }
 
-    if (0 < toNormalizedStops.data.normalizedStops.length) {
-      const stop = toNormalizedStops.data.normalizedStops[0]
-      setToSearchName(stop.stops[0].name)
+    if (0 < toNormalizedStops.data.searchNormalizedStops.totalCount) {
+      const stop = toNormalizedStops.data.searchNormalizedStops.edges[0]
+      setToSearchName(stop.name)
       setUserInputted(true)
       setSelectedToKey({
-        label: stop.stops[0].name,
+        label: stop.name,
         key: stop.key,
-        value: stop.stops.map(s => s.uid)
+        value: stop.stops.edges.map(s => s.uid)
       })
     }
   }, [fromNormalizedStops.data, toNormalizedStops.data])

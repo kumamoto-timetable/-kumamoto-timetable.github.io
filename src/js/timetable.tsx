@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import React, { useEffect, useRef } from "react";
 import { useMemo } from "react";
 import { useQRCode } from 'next-qrcode';
@@ -12,7 +13,8 @@ function isNullable(v: unknown) {
 }
 
 function nextDay(x: 0 | 1 | 2 | 3 | 4 | 5 | 6) {
-  var now = new Date();
+  const baseDate = new URL(location.href).searchParams.get('startDate')
+  const now = baseDate ? dayjs(baseDate, 'YYYY-MM-DD').toDate() : new Date();
   now.setDate(now.getDate() + (x + (7 - now.getDay())) % 7);
   return now;
 }
@@ -31,7 +33,7 @@ type TimeTableData = [number, {
   moveTimeSec: number
 }[]]
 
-function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetableForBetweenStops'][number][number]) {
+function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number][number]) {
   return match(stopTime)
     .with({ __typename: 'StopTimeArrivalInfo' }, stopTime => ({
       uid: stopTime.uid,
@@ -54,20 +56,29 @@ function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenSto
     .run()
 }
 
-function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetableForBetweenStops'][number]) {
+function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number], firstTransit?: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number]) {
   const fromStopTime = stopTimeTransform(transit[0])
   const toStopTime = stopTimeTransform(transit[1])
 
-  const routeName = fromStopTime.route.longName!
+  const routeName = fromStopTime.route.longName ?? ''
   const routeIds = routeName.includes('：') ? routeName.split('：')[0].split('/') : [fromStopTime.headsign.slice(0, 4)]
 
   const moveTimeSec = timeStringToSeconds(toStopTime.departure.time) - timeStringToSeconds(fromStopTime.departure.time)
 
+  let hour = 0
+  if (firstTransit) {
+    const firstFromStopTime = stopTimeTransform(firstTransit[0])
+    const diffHour = dayjs(fromStopTime.departure.time).diff(dayjs(firstFromStopTime.departure.time), 'hour')
+    hour = dayjs(firstFromStopTime.departure.time).hour() + diffHour
+  } else {
+    hour = dayjs(fromStopTime.departure.time).hour()
+  }
+
   return {
     uid: fromStopTime.uid,
     departure: {
-      hour: Number(fromStopTime.departure.time.split(':')[0]),
-      minute: Number(fromStopTime.departure.time.split(':')[1])
+      hour: hour,
+      minute: dayjs(fromStopTime.departure.time).minute(),
     },
     routeIds: routeIds,
     moveTimeSec: moveTimeSec,
@@ -114,38 +125,52 @@ export function TimetableTable(props: {
 
   const [monday] = useTimetableForBetweenStopsQuery({
     variables: {
-      where: {
+      conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
         date: generateDateFormat(nextDay(1))
+      },
+      pagination: {
+        offset: 0,
+        limit: 50
       }
     }
   })
   const [saturday] = useTimetableForBetweenStopsQuery({
     variables: {
-      where: {
+      conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
         date: generateDateFormat(nextDay(6))
+      },
+      pagination: {
+        offset: 0,
+        limit: 50
       }
     }
   })
   const [sunday] = useTimetableForBetweenStopsQuery({
     variables: {
-      where: {
+      conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
         date: generateDateFormat(nextDay(0))
+      },
+      pagination: {
+        offset: 0,
+        limit: 50
       }
     }
   })
 
   const timetables = useMemo(() => {
     if (isNullable(monday.data) || isNullable(saturday.data) || isNullable(sunday.data)) return null
-    if (monday.data.timetableForBetweenStops.length === 0 && saturday.data.timetableForBetweenStops.length === 0 && sunday.data.timetableForBetweenStops.length === 0) return []
+    if (monday.data.timetable.totalCount === 0 && saturday.data.timetable.totalCount === 0 && sunday.data.timetable.totalCount === 0) return []
 
     const days = [
-      timetableArray((monday.data?.timetableForBetweenStops ?? []).map((transit) => transform(transit))) as TimeTableData[],
-      timetableArray((saturday.data?.timetableForBetweenStops ?? []).map((transit) => transform(transit))) as TimeTableData[],
-      timetableArray((sunday.data?.timetableForBetweenStops ?? []).map((transit) => transform(transit))) as TimeTableData[],
+      timetableArray((monday.data?.timetable.edges ?? []).map((transit) => transform(transit, monday.data.timetable.edges[0]))) as TimeTableData[],
+      timetableArray((saturday.data?.timetable.edges ?? []).map((transit) => transform(transit, saturday.data?.timetable.edges[0]))) as TimeTableData[],
+      timetableArray((sunday.data?.timetable.edges ?? []).map((transit) => transform(transit, sunday.data?.timetable.edges[0]))) as TimeTableData[],
     ]
+
+    console.log(days)
 
     let minHour = 23
     days.forEach(timetable => {
@@ -190,9 +215,9 @@ export function TimetableTable(props: {
 
     const moveCenterTimes =
       [
-        ...(monday.data?.timetableForBetweenStops ?? []),
-        ...(saturday.data?.timetableForBetweenStops ?? []),
-        ...(sunday.data?.timetableForBetweenStops ?? [])
+        ...(monday.data?.timetable.edges ?? []),
+        ...(saturday.data?.timetable.edges ?? []),
+        ...(sunday.data?.timetable.edges ?? [])
       ].map((transit) => transform(transit).moveTimeSec).sort((a, b) => a - b)
 
     const half = Math.floor(moveCenterTimes.length / 2);
