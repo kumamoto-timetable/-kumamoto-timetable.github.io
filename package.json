@@ -7,6 +7,7 @@
     "dev": "parcel serve src/index.html",
     "build:clean": "rimraf dist",
     "build:static": "parcel build src/index.html --public-url ./",
+    "build:finalize": "node -e \"require('fs').writeFileSync('dist/CNAME', 'mytt.kumamoto-toshibus.co.jp\\n')\"",
     "build": "run-s build:*",
     "graphql:codegen": "graphql-codegen --config codegen.ts",
     "publish": "git subtree push -P dist origin gh-pages"
