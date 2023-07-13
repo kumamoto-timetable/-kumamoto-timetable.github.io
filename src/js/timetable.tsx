@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import utc from 'dayjs/plugin/utc'
 import React, { useEffect, useRef } from "react";
 import { useMemo } from "react";
 import { useQRCode } from 'next-qrcode';
@@ -7,6 +8,7 @@ import { match } from 'ts-pattern'
 import { useTimetableForBetweenStopsQuery } from "../graphql/generated/graphql";
 import { timeStringToSeconds } from "./utils";
 
+dayjs.extend(utc)
 
 function isNullable(v: unknown) {
   return v === undefined || v === null
@@ -16,7 +18,7 @@ function nextDay(x: 0 | 1 | 2 | 3 | 4 | 5 | 6) {
   const baseDate = new URL(location.href).searchParams.get('startDate')
   const now = baseDate ? dayjs(baseDate, 'YYYY-MM-DD').toDate() : new Date();
   now.setDate(now.getDate() + (x + (7 - now.getDay())) % 7);
-  return now;
+  return dayjs(now);
 }
 
 function generateDateFormat(date: Date, split: string = '-') {
@@ -68,7 +70,8 @@ function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[
   let hour = 0
   if (firstTransit) {
     const firstFromStopTime = stopTimeTransform(firstTransit[0])
-    const diffHour = dayjs(fromStopTime.departure.time).diff(dayjs(firstFromStopTime.departure.time), 'hour')
+    const diffHour = dayjs(fromStopTime.departure.time).startOf('h').diff(dayjs(firstFromStopTime.departure.time).startOf('h'), 'hour')
+
     hour = dayjs(firstFromStopTime.departure.time).hour() + diffHour
   } else {
     hour = dayjs(fromStopTime.departure.time).hour()
@@ -127,7 +130,7 @@ export function TimetableTable(props: {
     variables: {
       conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: generateDateFormat(nextDay(1))
+        date: nextDay(1).startOf('day').toISOString()
       },
       pagination: {
         offset: 0,
@@ -139,7 +142,7 @@ export function TimetableTable(props: {
     variables: {
       conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: generateDateFormat(nextDay(6))
+        date: nextDay(6).startOf('day').toISOString()
       },
       pagination: {
         offset: 0,
@@ -151,7 +154,7 @@ export function TimetableTable(props: {
     variables: {
       conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: generateDateFormat(nextDay(0))
+        date: nextDay(0).startOf('day').toISOString()
       },
       pagination: {
         offset: 0,
@@ -169,8 +172,6 @@ export function TimetableTable(props: {
       timetableArray((saturday.data?.timetable.edges ?? []).map((transit) => transform(transit, saturday.data?.timetable.edges[0]))) as TimeTableData[],
       timetableArray((sunday.data?.timetable.edges ?? []).map((transit) => transform(transit, sunday.data?.timetable.edges[0]))) as TimeTableData[],
     ]
-
-    console.log(days)
 
     let minHour = 23
     days.forEach(timetable => {
@@ -284,13 +285,13 @@ export function TimetableTable(props: {
 
             <div className="table_header_col_wrap">
               <div className="table_header_col weekday">
-                <span className="day_name">平日</span><span className="day">（{generateDateFormat(nextDay(1), '/')}）</span>
+                <span className="day_name">平日</span><span className="day">（{nextDay(1).format('YYYY/MM/DD')}）</span>
               </div>
               <div className="table_header_col saturday">
-                <span className="day_name">土曜</span><span className="day">（{generateDateFormat(nextDay(6), '/')}）</span>
+                <span className="day_name">土曜</span><span className="day">（{nextDay(6).format('YYYY/MM/DD')}）</span>
               </div>
               <div className="table_header_col sunday">
-                <span className="day_name">日祝</span><span className="day">（{generateDateFormat(nextDay(0), '/')}）</span>
+                <span className="day_name">日祝</span><span className="day">（{nextDay(0).format('YYYY/MM/DD')}）</span>
               </div>
             </div>
 
