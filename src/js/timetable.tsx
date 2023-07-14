@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { useMemo } from "react";
 import { useQRCode } from 'next-qrcode';
 import { match } from 'ts-pattern'
+import holidayJp from '@holiday-jp/holiday_jp'
 
 import { useTimetableForBetweenStopsQuery } from "../graphql/generated/graphql";
 import { timeStringToSeconds } from "./utils";
@@ -14,11 +15,39 @@ function isNullable(v: unknown) {
   return v === undefined || v === null
 }
 
-function nextDay(x: 0 | 1 | 2 | 3 | 4 | 5 | 6) {
+const specialDays = [
+  '8/13',
+  '8/14',
+  '8/15',
+  '12/29',
+  '12/30',
+  '12/31',
+  '1/1',
+  '1/2',
+  '1/3',
+]
+
+function nextDay(type: 'weekday' | 'saturday' | 'holiday') {
   const baseDate = new URL(location.href).searchParams.get('startDate')
-  const now = baseDate ? dayjs(baseDate, 'YYYY-MM-DD').toDate() : new Date();
-  now.setDate(now.getDate() + (x + (7 - now.getDay())) % 7);
-  return dayjs(now);
+  let date = (baseDate ? dayjs(baseDate, 'YYYY-MM-DD') : dayjs()).startOf('day')
+  while (true) {
+    if (specialDays.includes(date.format('M/D'))) {
+      date = date.add(1, 'day')
+      continue
+    }
+
+    if (type === 'holiday') {
+      if (holidayJp.isHoliday(date.toDate()) || [0].includes(date.day())) break
+    } else if (type === 'weekday') {
+      if (holidayJp.isHoliday(date.toDate()) === false && [1, 2, 3, 4, 5].includes(date.day())) break
+    } else if (type === 'saturday') {
+      if (holidayJp.isHoliday(date.toDate()) === false && [6].includes(date.day())) break
+    }
+
+    date = date.add(1, 'day')
+  }
+
+  return date;
 }
 
 function generateDateFormat(date: Date, split: string = '-') {
@@ -130,7 +159,7 @@ export function TimetableTable(props: {
     variables: {
       conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: nextDay(1).startOf('day').toISOString()
+        date: nextDay('weekday').startOf('day').toISOString()
       },
       pagination: {
         offset: 0,
@@ -142,7 +171,7 @@ export function TimetableTable(props: {
     variables: {
       conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: nextDay(6).startOf('day').toISOString()
+        date: nextDay('saturday').startOf('day').toISOString()
       },
       pagination: {
         offset: 0,
@@ -154,7 +183,7 @@ export function TimetableTable(props: {
     variables: {
       conditions: {
         transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: nextDay(0).startOf('day').toISOString()
+        date: nextDay('holiday').startOf('day').toISOString()
       },
       pagination: {
         offset: 0,
@@ -285,13 +314,13 @@ export function TimetableTable(props: {
 
             <div className="table_header_col_wrap">
               <div className="table_header_col weekday">
-                <span className="day_name">平日</span><span className="day">（{nextDay(1).format('YYYY/MM/DD')}）</span>
+                <span className="day_name">平日</span><span className="day">（{nextDay('weekday').format('YYYY/MM/DD')}）</span>
               </div>
               <div className="table_header_col saturday">
-                <span className="day_name">土曜</span><span className="day">（{nextDay(6).format('YYYY/MM/DD')}）</span>
+                <span className="day_name">土曜</span><span className="day">（{nextDay('saturday').format('YYYY/MM/DD')}）</span>
               </div>
               <div className="table_header_col sunday">
-                <span className="day_name">日祝</span><span className="day">（{nextDay(0).format('YYYY/MM/DD')}）</span>
+                <span className="day_name">日祝</span><span className="day">（{nextDay('holiday').format('YYYY/MM/DD')}）</span>
               </div>
             </div>
 
