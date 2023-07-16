@@ -281,6 +281,8 @@ export function TimetableTable(props: {
     </div>
   )
 
+  const qrUrl = `https://km.bus-vision.jp/kumamoto/view/approach.html?stopCdFrom=${props.fromStop.key}&stopCdTo=${props.toStop.key}`
+
   return (
     <div className='timetable'>
       <div className='timetable_header'>
@@ -288,20 +290,22 @@ export function TimetableTable(props: {
         <div className='timetable_header_description'>所要約 <span className='timetable_header_description_minutes'>{moveCenterTimeSec / 60}</span> 分（経路・時間帯・交通状況により前後します）<>< br /><span>下線細字：所要時間が長い便です</span></></div>
         <div className='timetable_header_qr_description'><div className="center">リアル<br />タイム<br />情報▶</div></div>
         <div className="timetable_header_qr">
-          <Canvas
-            text={`https://km.bus-vision.jp/kumamoto/view/approach.html?stopCdFrom=${props.fromStop.key}&stopCdTo=${props.toStop.key}`}
-            options={{
-              type: 'image/png',
-              quality: 1,
-              level: 'M',
-              margin: 4,
-              scale: 2,
-              color: {
-                dark: '#000000FF',
-                light: '#FFFFFFFF',
-              },
-            }}
-          />
+          <a href={qrUrl} target="_blank" rel="noopener">
+            <Canvas
+              text={qrUrl}
+              options={{
+                type: 'image/png',
+                quality: 1,
+                level: 'M',
+                margin: 4,
+                scale: 2,
+                color: {
+                  dark: '#000000FF',
+                  light: '#FFFFFFFF',
+                },
+              }}
+            />
+          </a>
         </div>
       </div>
       <div style={{
