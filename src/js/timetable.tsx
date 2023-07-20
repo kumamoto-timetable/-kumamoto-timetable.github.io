@@ -447,7 +447,6 @@ export function TimetableTable(props: {
                   const dayName = i === 0 ? 'weekday' : i === 1 ? 'saturday' : 'sunday'
 
                   const includedPlatformCode = minutes.some(minute => minute.stop.platform.code !== null)
-                  console.log({ includedPlatformCode, ...props.checkboxes })
                   const widthType = includedPlatformCode && props.checkboxes.companyName ? '2' : props.checkboxes.companyName || props.checkboxes.routeId ? '1' : '0'
 
                   return <div className={`minutes minute_width_${widthType} ${dayName} ${dayName}_${hourIndex % 2}`}>

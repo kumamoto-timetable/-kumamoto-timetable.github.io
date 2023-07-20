@@ -29,9 +29,9 @@ function App() {
     return {
       fromSearchName: url.searchParams.get('fromName') ?? '',
       toSearchName: url.searchParams.get('toName') ?? '',
-      displayDestination: url.searchParams.get('displayDestination') === 'on',
-      displayRouteId: url.searchParams.get('displayRouteId') === 'on',
-      displayCompanyName: url.searchParams.get('displayCompanyName') === 'on',
+      displayDestination: (url.searchParams.get('displayDestination') ?? 'on') === 'on',
+      displayRouteId: (url.searchParams.get('displayRouteId') ?? 'on') === 'on',
+      displayCompanyName: (url.searchParams.get('displayCompanyName') ?? 'off') === 'on',
     }
   }, [])
 
@@ -156,8 +156,6 @@ function App() {
             setFromSearchName(value)
           }}
           onChange={(event, value, reason) => {
-            console.log('onChange', { event, value, reason })
-
             if (reason === 'clear') {
               setFromSearchName('')
 
@@ -185,8 +183,6 @@ function App() {
             setToSearchName(value)
           }}
           onChange={(event, value, reason) => {
-            console.log('onChange', { event, value, reason })
-
             if (reason === 'clear') {
               setToSearchName('')
 
