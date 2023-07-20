@@ -14,6 +14,7 @@ import { TimetableTable } from './timetable'
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { GA } from './google_analytics';
 
 function App() {
   const componentRef = useRef();
@@ -34,6 +35,13 @@ function App() {
       displayCompanyName: (url.searchParams.get('displayCompanyName') ?? 'off') === 'on',
     }
   }, [])
+
+  useEffect(() => {
+    GA.send({
+      hitType: "pageview",
+      page: location.pathname + location.search,
+    });
+  }, [location])
 
   const [destinationCheckbox, setDestinationCheckbox] = useState<boolean>(defaultValues.displayDestination)
   const [routeIdCheckbox, setRouteIdCheckbox] = useState<boolean>(defaultValues.displayRouteId)
@@ -136,6 +144,15 @@ function App() {
       })
     }
   }, [fromNormalizedStops.data, toNormalizedStops.data])
+
+  useEffect(() => {
+    if (selectedFrom === null || selectedTo === null) return
+
+    GA.event('search', {
+      origin: selectedFrom.key,
+      destination: selectedTo.key,
+    })
+  }, [selectedFrom, selectedTo])
 
   return (
     <>
