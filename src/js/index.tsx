@@ -23,7 +23,7 @@ function App() {
     onAfterPrint() {
       if (selectedFrom === null || selectedTo === null) return
 
-      (window as any).gtag('event', 'print_timetable', { origin: selectedFrom.key, destination: selectedTo.key })
+      (window as any).gtag('event', 'print_timetable', { origin: selectedFrom.label, destination: selectedTo.label })
     },
   });
 
