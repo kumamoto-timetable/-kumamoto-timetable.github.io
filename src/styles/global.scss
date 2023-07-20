@@ -2,12 +2,20 @@
   box-sizing: border-box;
 }
 
+body {
+  margin: 0;
+  padding: 8px;
+}
+
 .controller {
   display: grid;
   grid-template-columns: 200pt 25pt 60pt 1fr;
   grid-template-rows: 1fr 1fr;
   grid-column-gap: 5px;
-  grid-row-gap: 6px;
+  grid-row-gap: 15px;
+
+  margin-top: 7px;
+  margin-bottom: 10px;
 
   .fromName {
     grid-area: 1 / 1 / 2 / 2;
@@ -23,6 +31,21 @@
   }
 }
 
+.none {
+  display: none;
+}
+
+.MuiOutlinedInput-root {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+}
+
 @page {
   margin: 5mm;
+}
+
+@media print {
+  body {
+    zoom: 0.7;
+  }
 }

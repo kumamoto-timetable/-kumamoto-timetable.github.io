@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import Select from 'react-select'
+// import Select from 'react-select'
 import * as Urql from 'urql'
 import { useReactToPrint } from 'react-to-print'
+
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
 import { accessTarget } from './access_target'
 
 import { Language, NormalizeType, Order, useNormalizedStopsQuery, useRemotesQuery, VersionOrderColumn } from '../graphql/generated/graphql'
 import { TimetableTable } from './timetable'
-
-export interface ColourOption {
-  readonly value: string;
-  readonly label: string;
-}
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 function App() {
   const componentRef = useRef();
@@ -22,10 +23,26 @@ function App() {
 
   const [userInputted, setUserInputted] = useState<boolean>(false)
 
-  const [fromSearchName, setFromSearchName] = useState(new URL(location.href).searchParams.get('fromName') ?? '')
+  const defaultValues = useMemo(() => {
+    const url = new URL(location.href)
+
+    return {
+      fromSearchName: url.searchParams.get('fromName') ?? '',
+      toSearchName: url.searchParams.get('toName') ?? '',
+      displayDestination: url.searchParams.get('displayDestination') === 'on',
+      displayRouteId: url.searchParams.get('displayRouteId') === 'on',
+      displayCompanyName: url.searchParams.get('displayCompanyName') === 'on',
+    }
+  }, [])
+
+  const [destinationCheckbox, setDestinationCheckbox] = useState<boolean>(defaultValues.displayDestination)
+  const [routeIdCheckbox, setRouteIdCheckbox] = useState<boolean>(defaultValues.displayRouteId)
+  const [companyNameCheckbox, setCompanyNameCheckbox] = useState<boolean>(defaultValues.displayCompanyName)
+
+  const [fromSearchName, setFromSearchName] = useState(defaultValues.fromSearchName)
   const [selectedFrom, setSelectedFromKey] = useState<{ label: string; key: string; value: string[] } | null>(null)
 
-  const [toSearchName, setToSearchName] = useState(new URL(location.href).searchParams.get('toName') ?? '')
+  const [toSearchName, setToSearchName] = useState(defaultValues.toSearchName)
   const [selectedTo, setSelectedToKey] = useState<{ label: string; key: string; value: string[] } | null>(null)
 
   const handleExchange = useCallback(() => {
@@ -123,49 +140,84 @@ function App() {
   return (
     <>
       <div className='controller'>
-        <Select
+        <Autocomplete
           className='fromName'
-          filterOption={null}
+          disablePortal
           options={fromStops}
+          isOptionEqualToValue={(option, value) => option.key === value.key}
+          filterOptions={v => v}
+          renderInput={(params) => (<TextField {...params} label="出発地" />)}
+          inputValue={fromSearchName}
+          onInputChange={(event, value, reason) => {
+            if (event === null) return
+            if (reason === 'reset') return
+
+            setUserInputted(true)
+            setFromSearchName(value)
+          }}
+          onChange={(event, value, reason) => {
+            console.log('onChange', { event, value, reason })
+
+            if (reason === 'clear') {
+              setFromSearchName('')
+
+              return
+            }
+
+            setFromSearchName(value.label)
+            setSelectedFromKey(value)
+          }}
           value={selectedFrom}
-          onInputChange={(v, actionMeta) => {
-            if (['input-change', 'set-value'].includes(actionMeta.action) === false) return
-            setUserInputted(true)
-            setFromSearchName(v)
-            setSelectedFromKey(null)
-          }}
-          onChange={(selectedOption) => {
-            setUserInputted(true)
-            setFromSearchName(selectedOption.label)
-            setSelectedFromKey(selectedOption)
-          }}
-          placeholder='出発地'
         />
-        <Select
+        <Autocomplete
           className='toName'
-          filterOption={null}
+          disablePortal
           options={toStops}
+          isOptionEqualToValue={(option, value) => option.key === value.key}
+          filterOptions={v => v}
+          renderInput={(params) => (<TextField {...params} label="停車地" />)}
+          inputValue={toSearchName}
+          onInputChange={(event, value, reason) => {
+            if (event === null) return
+            if (reason === 'reset') return
+
+            setUserInputted(true)
+            setToSearchName(value)
+          }}
+          onChange={(event, value, reason) => {
+            console.log('onChange', { event, value, reason })
+
+            if (reason === 'clear') {
+              setToSearchName('')
+
+              return
+            }
+
+            setToSearchName(value.label)
+            setSelectedToKey(value)
+          }}
           value={selectedTo}
-          onInputChange={(v, actionMeta) => {
-            if (['input-change', 'set-value'].includes(actionMeta.action) === false) return
-            setUserInputted(true)
-            setToSearchName(v)
-            setSelectedToKey(null)
-          }}
-          onChange={(selectedOption) => {
-            setUserInputted(true)
-            setToSearchName(selectedOption.label)
-            setSelectedToKey(selectedOption)
-          }}
-          placeholder='停車地'
         />
         <button className='exchange' onClick={handleExchange}>⇅</button>
         <button className='print' disabled={selectedFrom === null || selectedTo === null} onClick={handlePrint}>印刷する</button>
-      </div>
+        <FormGroup style={{
+          display: 'flex',
+          flexDirection: 'row',
+        }} >
+          <FormControlLabel control={<Checkbox checked={destinationCheckbox} onChange={(event) => setDestinationCheckbox(event.target.checked)} />} label="行先" />
+          <FormControlLabel control={<Checkbox checked={routeIdCheckbox} onChange={(event) => setRouteIdCheckbox(event.target.checked)} />} label="路線番号" />
+          <FormControlLabel control={<Checkbox checked={companyNameCheckbox} onChange={(event) => setCompanyNameCheckbox(event.target.checked)} />} label="会社名" />
+        </FormGroup>
+        <div>SafariやFirefoxをお使いの方は、約70%に縮小して印刷することをおすすめします。</div>
+      </div >
       {
         selectedFrom && selectedTo &&
         <div ref={componentRef} >
-          <TimetableTable fromStop={{ label: selectedFrom.label, key: selectedFrom.key, uids: selectedFrom.value }} toStop={{ label: selectedTo.label, key: selectedTo.key, uids: selectedTo.value }} />
+          <TimetableTable
+            fromStop={{ label: selectedFrom.label, key: selectedFrom.key, uids: selectedFrom.value }}
+            toStop={{ label: selectedTo.label, key: selectedTo.key, uids: selectedTo.value }}
+            checkboxes={{ destination: destinationCheckbox, routeId: routeIdCheckbox, companyName: companyNameCheckbox }}
+          />
         </div>
       }
     </>

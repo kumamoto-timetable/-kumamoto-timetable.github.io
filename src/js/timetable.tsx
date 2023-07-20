@@ -50,10 +50,6 @@ function nextDay(type: 'weekday' | 'saturday' | 'holiday') {
   return date;
 }
 
-function generateDateFormat(date: Date, split: string = '-') {
-  return `${date.getFullYear()}${split}${String(date.getMonth() + 1).padStart(2, '0')}${split}${String(date.getDate()).padStart(2, '0')}`
-}
-
 type TimeTableData = [number, {
   uid: string;
   departure: {
@@ -61,6 +57,18 @@ type TimeTableData = [number, {
     minute: number;
   };
   routeIds: string[]
+  route: {
+    ids: string[],
+    name: string
+  }
+  remote: {
+    uid: string
+  }
+  stop: {
+    platform: {
+      code: string | null
+    }
+  }
   moveTimeSec: number
 }[]]
 
@@ -71,18 +79,42 @@ function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenSto
       departure: stopTime.a_departure,
       route: stopTime.route,
       headsign: stopTime.headsign,
+      remote: {
+        uid: stopTime.remoteVersion.remote.uid
+      },
+      stop: {
+        platform: {
+          code: stopTime.stop.platform?.code ?? null
+        }
+      }
     }))
     .with({ __typename: 'StopTimeDepartureInfo' }, stopTime => ({
       uid: stopTime.uid,
       departure: stopTime.d_departure,
       route: stopTime.route,
       headsign: stopTime.headsign,
+      remote: {
+        uid: stopTime.remoteVersion.remote.uid
+      },
+      stop: {
+        platform: {
+          code: stopTime.stop.platform?.code ?? null
+        }
+      }
     }))
     .with({ __typename: 'StopTimeInfo' }, stopTime => ({
       uid: stopTime.uid,
       departure: stopTime.departure,
       route: stopTime.route,
       headsign: stopTime.headsign,
+      remote: {
+        uid: stopTime.remoteVersion.remote.uid
+      },
+      stop: {
+        platform: {
+          code: stopTime.stop.platform?.code ?? null
+        }
+      }
     }))
     .run()
 }
@@ -113,6 +145,18 @@ function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[
       minute: dayjs(fromStopTime.departure.time).minute(),
     },
     routeIds: routeIds,
+    route: {
+      ids: routeIds,
+      name: fromStopTime.headsign,
+    },
+    remote: {
+      uid: fromStopTime.remote.uid
+    },
+    stop: {
+      platform: {
+        code: fromStopTime.stop.platform.code
+      }
+    },
     moveTimeSec: moveTimeSec,
   }
 }
@@ -142,9 +186,70 @@ function timetableArray(rows: ReturnType<typeof transform>[]) {
   return result3
 }
 
+const remoteUidMap = {
+  '9b1e8ca3-a9e9-4a23-a993-32fc7ba0c2bc': '熊',
+  '56e25970-a23c-437f-8f49-d4af91bfc0f7': '産',
+  'bb9ae20c-562b-4ade-b51f-cfa7ae667e08': '都',
+  '4ec14a83-e52a-4657-b644-276ef21d2a80': '電',
+} as const
+
+const circleNumberMap = {
+  '1': '①',
+  '2': '②',
+  '3': '③',
+  '4': '④',
+  '5': '⑤',
+  '6': '⑥',
+  '7': '⑦',
+  '8': '⑧',
+  '9': '⑨',
+  '10': '⑩',
+  '11': '⑪',
+  '12': '⑫',
+  '13': '⑬',
+  '14': '⑭',
+  '15': '⑮',
+  '16': '⑯',
+  '17': '⑰',
+  '18': '⑱',
+  '19': '⑲',
+  '20': '⑳',
+  '21': '㉑',
+  '22': '㉒',
+  '23': '㉓',
+  '24': '㉔',
+  '25': '㉕',
+  '26': '㉖',
+  '27': '㉗',
+  '28': '㉘',
+  '29': '㉙',
+  '30': '㉚',
+  '31': '㉛',
+  '32': '㉜',
+  '33': '㉝',
+  '34': '㉞',
+  '35': '㉟',
+  '36': '㊱',
+  '37': '㊲',
+  '38': '㊳',
+  '39': '㊴',
+  '40': '㊵',
+  '41': '㊶',
+  '42': '㊷',
+  '43': '㊸',
+  '44': '㊹',
+  '45': '㊺',
+  '46': '㊻',
+  '47': '㊼',
+  '48': '㊽',
+  '49': '㊾',
+  '50': '㊿'
+}
+
 export function TimetableTable(props: {
   fromStop: { label: string, key: string, uids: string[]; }
   toStop: { label: string, key: string, uids: string[]; }
+  checkboxes: { destination: boolean, routeId: boolean, companyName: boolean }
 }) {
   const { Canvas } = useQRCode();
 
@@ -273,6 +378,9 @@ export function TimetableTable(props: {
   const url = new URL(location.href);
   url.searchParams.set('fromName', props.fromStop.label)
   url.searchParams.set('toName', props.toStop.label)
+  url.searchParams.set('displayDestination', props.checkboxes.destination ? 'on' : 'off');
+  url.searchParams.set('displayRouteId', props.checkboxes.routeId ? 'on' : 'off')
+  url.searchParams.set('displayCompanyName', props.checkboxes.companyName ? 'on' : 'off')
   history.replaceState(null, null, url.href)
 
   if (timetables.length === 0) return (
@@ -338,7 +446,11 @@ export function TimetableTable(props: {
                 {timetable.map((minutes, i) => {
                   const dayName = i === 0 ? 'weekday' : i === 1 ? 'saturday' : 'sunday'
 
-                  return <div className={`minutes ${dayName} ${dayName}_${hourIndex % 2}`}>
+                  const includedPlatformCode = minutes.some(minute => minute.stop.platform.code !== null)
+                  console.log({ includedPlatformCode, ...props.checkboxes })
+                  const widthType = includedPlatformCode && props.checkboxes.companyName ? '2' : props.checkboxes.companyName || props.checkboxes.routeId ? '1' : '0'
+
+                  return <div className={`minutes minute_width_${widthType} ${dayName} ${dayName}_${hourIndex % 2}`}>
                     {minutes.map((minute) => {
                       // 中央値×2.0以上 AND 中央値+20以上 → 除外　…桜町→市役所で52分などは除外される
                       if (moveCenterTimeSec * 2.0 <= minute.moveTimeSec && moveCenterTimeSec + 60 * 20 <= minute.moveTimeSec) return
@@ -348,8 +460,11 @@ export function TimetableTable(props: {
 
                       return (
                         <div key={minute.uid} className="minute_wrap">
+                          <div className={`company_name ${props.checkboxes.companyName ? '' : 'none'}`}>{remoteUidMap[minute.remote.uid]}</div>
+                          <div className="stop_platform_code">{circleNumberMap[minute.stop.platform.code]}</div>
                           <div className={`minute ${minute_style}`}>{String(minute.departure.minute).padStart(2, '0')}</div>
-                          <div className="route_id"><div style={{ fontSize: '3pt' }}>{minute.routeIds.join('/')}</div></div>
+                          <div className={`route_name ${props.checkboxes.destination ? '' : 'none'}`}>{minute.route.name.split('（')[0].slice(0, 5)}</div>
+                          <div className={`route_id ${props.checkboxes.routeId ? '' : 'none'}`}>{minute.routeIds.join('/')}</div>
                         </div>
                       )
                     })}

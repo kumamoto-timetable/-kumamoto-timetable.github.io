@@ -83,7 +83,7 @@ $sunday_width: 28.57%;
 
     .hour_right {
       border-left: $border_size solid #000;
-      
+
       padding: 0 4pt;
       font-size: $hourSize;
       font-weight: bold;
@@ -92,7 +92,7 @@ $sunday_width: 28.57%;
       .center {
         position: relative;
         top: 50%;
-        transform: translateY(-50%);;
+        transform: translateY(-50%);
       }
     }
 
@@ -155,7 +155,33 @@ $sunday_width: 28.57%;
           }
         }
 
+        &.minute_width_0 {
+          padding-left: 0pt;
+
+          .minute_wrap{
+            margin-left: 0pt;
+          }
+        }
+
+        &.minute_width_1 {
+          padding-left: 8pt;
+
+          .minute_wrap{
+            margin-left: 2pt;
+          }
+        }
+        
+        &.minute_width_2 {
+          padding-left: 0pt;
+
+          .minute_wrap{
+            margin-left: 10pt;
+          }
+        }
+
         .minute_wrap {
+          position: relative;
+
           width: 44pt;
 
           .minute {
@@ -170,10 +196,34 @@ $sunday_width: 28.57%;
             }
           }
 
-          .route_id {
-            display: flex;
-            justify-content: center;
+          .company_name {
+            position: absolute;
+            transform: translate(-1pt, 5.5pt);
+
+            height: 12pt;
+
+            font-size: 10pt;
+
+            text-decoration: underline;
+          }
+
+          .stop_platform_code {
+            position: absolute;
+            right: 0;
+
+            transform: translate(1pt, 5pt);
+
+            font-size: 11pt;
+          }
+
+          .route_name {
             margin-top: -4pt;
+            font-size: 3pt;
+          }
+
+          .route_id {
+            margin-top: -2pt;
+            font-size: 3pt;
           }
         }
       }

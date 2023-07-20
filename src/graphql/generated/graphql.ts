@@ -211,6 +211,7 @@ export type StopTimeArrivalInfo = {
   arrival: Time;
   departure?: Maybe<Time>;
   headsign?: Maybe<Scalars['String']>;
+  remoteVersion: VersionInfo;
   route: RouteInfo;
   stop: StopUnion;
   uid: Scalars['String'];
@@ -221,6 +222,7 @@ export type StopTimeDepartureInfo = {
   arrival?: Maybe<Time>;
   departure: Time;
   headsign?: Maybe<Scalars['String']>;
+  remoteVersion: VersionInfo;
   route: RouteInfo;
   stop: StopUnion;
   uid: Scalars['String'];
@@ -231,6 +233,7 @@ export type StopTimeInfo = {
   arrival: Time;
   departure: Time;
   headsign?: Maybe<Scalars['String']>;
+  remoteVersion: VersionInfo;
   route: RouteInfo;
   stop: StopUnion;
   uid: Scalars['String'];
@@ -292,6 +295,7 @@ export type VersionInfo = {
   created_at: Scalars['String'];
   data_portal_url: Scalars['String'];
   realtime_data_urls: Array<Scalars['String']>;
+  remote: RemoteInfo;
   static_data_url: Scalars['String'];
   support_types: Array<SupportType>;
   uid: Scalars['String'];
@@ -350,7 +354,7 @@ export type TimetableForBetweenStopsQueryVariables = Exact<{
 }>;
 
 
-export type TimetableForBetweenStopsQuery = { __typename?: 'Query', timetable: { __typename?: 'TimetablePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean }, edges: Array<Array<{ __typename?: 'StopTimeArrivalInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, a_departure?: { __typename?: 'Time', time: string } | null } | { __typename?: 'StopTimeDepartureInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, d_departure: { __typename?: 'Time', time: string } } | { __typename?: 'StopTimeInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, departure: { __typename?: 'Time', time: string } }>> } };
+export type TimetableForBetweenStopsQuery = { __typename?: 'Query', timetable: { __typename?: 'TimetablePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean }, edges: Array<Array<{ __typename?: 'StopTimeArrivalInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, a_arrival: { __typename?: 'Time', time: string }, a_departure?: { __typename?: 'Time', time: string } | null, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string } }, stop: { __typename?: 'StopInfo', platform?: { __typename?: 'PlatformInfo', code?: string | null } | null } } | { __typename?: 'StopTimeDepartureInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, d_arrival?: { __typename?: 'Time', time: string } | null, d_departure: { __typename?: 'Time', time: string }, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string } }, stop: { __typename?: 'StopInfo', platform?: { __typename?: 'PlatformInfo', code?: string | null } | null } } | { __typename?: 'StopTimeInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, arrival: { __typename?: 'Time', time: string }, departure: { __typename?: 'Time', time: string }, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string } }, stop: { __typename?: 'StopInfo', platform?: { __typename?: 'PlatformInfo', code?: string | null } | null } }>> } };
 
 
 export const RemotesDocument = gql`
@@ -423,8 +427,23 @@ export const TimetableForBetweenStopsDocument = gql`
           uid
           longName
         }
+        a_arrival: arrival {
+          time
+        }
         a_departure: departure {
           time
+        }
+        remoteVersion {
+          remote {
+            uid
+          }
+        }
+        stop {
+          ... on StopInfo {
+            platform {
+              code
+            }
+          }
         }
       }
       ... on StopTimeDepartureInfo {
@@ -434,8 +453,23 @@ export const TimetableForBetweenStopsDocument = gql`
           uid
           longName
         }
+        d_arrival: arrival {
+          time
+        }
         d_departure: departure {
           time
+        }
+        remoteVersion {
+          remote {
+            uid
+          }
+        }
+        stop {
+          ... on StopInfo {
+            platform {
+              code
+            }
+          }
         }
       }
       ... on StopTimeInfo {
@@ -445,8 +479,23 @@ export const TimetableForBetweenStopsDocument = gql`
           uid
           longName
         }
+        arrival {
+          time
+        }
         departure {
           time
+        }
+        remoteVersion {
+          remote {
+            uid
+          }
+        }
+        stop {
+          ... on StopInfo {
+            platform {
+              code
+            }
+          }
         }
       }
     }

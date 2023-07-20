@@ -56,15 +56,30 @@ query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: Timet
       hasNextPage
     }
     edges {
-      ... on StopTimeArrivalInfo {
+... on StopTimeArrivalInfo {
         uid
         headsign
         route {
           uid
           longName
         }
+        a_arrival: arrival {
+          time
+        }
         a_departure: departure {
           time
+        }
+        remoteVersion {
+          remote {
+            uid
+          }
+        }
+        stop {
+          ... on StopInfo {
+            platform {
+              code
+            }
+          }
         }
       }
       ... on StopTimeDepartureInfo {
@@ -74,8 +89,23 @@ query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: Timet
           uid
           longName
         }
+        d_arrival: arrival {
+          time
+        }
         d_departure: departure {
           time
+        }
+        remoteVersion {
+          remote {
+            uid
+          }
+        }
+        stop {
+          ... on StopInfo {
+            platform {
+              code
+            }
+          }
         }
       }
       ... on StopTimeInfo {
@@ -85,8 +115,23 @@ query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: Timet
           uid
           longName
         }
+        arrival {
+          time
+        }
         departure {
           time
+        }
+        remoteVersion {
+          remote {
+            uid
+          }
+        }
+        stop {
+          ... on StopInfo {
+            platform {
+              code
+            }
+          }
         }
       }
     }
