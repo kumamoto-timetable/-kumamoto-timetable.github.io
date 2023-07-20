@@ -14,12 +14,17 @@ import { TimetableTable } from './timetable'
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import { GA } from './google_analytics';
+import { pageView } from './google_analytics';
 
 function App() {
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
+    onAfterPrint() {
+      if (selectedFrom === null || selectedTo === null) return
+
+      (window as any).gtag('event', 'print_timetable', { origin: selectedFrom.key, destination: selectedTo.key })
+    },
   });
 
   const [userInputted, setUserInputted] = useState<boolean>(false)
@@ -37,10 +42,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    GA.send({
-      hitType: "pageview",
-      page: location.pathname + location.search,
-    });
+    pageView(location.pathname + location.search)
   }, [location])
 
   const [destinationCheckbox, setDestinationCheckbox] = useState<boolean>(defaultValues.displayDestination)
@@ -148,7 +150,7 @@ function App() {
   useEffect(() => {
     if (selectedFrom === null || selectedTo === null) return
 
-    GA.event('search', {
+    (window as any).gtag('event', 'request_timetable', {
       origin: selectedFrom.key,
       destination: selectedTo.key,
     })

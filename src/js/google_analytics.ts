@@ -1,5 +1,5 @@
-import ReactGA from 'react-ga4'
-
-ReactGA.initialize('G-BTQR4M6W4Y')
-
-export const GA = ReactGA
+export const pageView = (path: string) => {
+  (window as any).gtag("config", 'G-BTQR4M6W4Y', {
+    page_path: path,
+  })
+}
