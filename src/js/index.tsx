@@ -142,8 +142,10 @@ function App() {
       <div className='controller'>
         <Autocomplete
           className='fromName'
+          freeSolo
           disablePortal
-          options={fromStops}
+          size="small"
+          options={fromSearchName === '' ? [] : fromStops}
           isOptionEqualToValue={(option, value) => option.key === value.key}
           filterOptions={v => v}
           renderInput={(params) => (<TextField {...params} label="出発地" />)}
@@ -156,7 +158,7 @@ function App() {
             setFromSearchName(value)
           }}
           onChange={(event, value, reason) => {
-            if (reason === 'clear') {
+            if (typeof value === 'string' || reason === 'clear') {
               setFromSearchName('')
 
               return
@@ -169,8 +171,10 @@ function App() {
         />
         <Autocomplete
           className='toName'
+          freeSolo
           disablePortal
-          options={toStops}
+          size="small"
+          options={toSearchName === '' ? [] : toStops}
           isOptionEqualToValue={(option, value) => option.key === value.key}
           filterOptions={v => v}
           renderInput={(params) => (<TextField {...params} label="停車地" />)}
@@ -183,7 +187,7 @@ function App() {
             setToSearchName(value)
           }}
           onChange={(event, value, reason) => {
-            if (reason === 'clear') {
+            if (typeof value === 'string' || reason === 'clear') {
               setToSearchName('')
 
               return
@@ -205,7 +209,7 @@ function App() {
           <FormControlLabel control={<Checkbox checked={companyNameCheckbox} onChange={(event) => setCompanyNameCheckbox(event.target.checked)} />} label="会社名" />
         </FormGroup>
         <div>SafariやFirefoxをお使いの方は、約70%に縮小して印刷することをおすすめします。</div>
-      </div >
+      </div>
       {
         selectedFrom && selectedTo &&
         <div ref={componentRef} >
