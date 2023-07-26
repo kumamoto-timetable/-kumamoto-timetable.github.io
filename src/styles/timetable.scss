@@ -1,19 +1,18 @@
 .timetable {
   .timetable_header {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     grid-template-rows: auto auto;
     grid-column-gap: 0px;
     grid-row-gap: 0px;
 
     justify-content: space-between;
 
+    background-color: #354f9b;
     color: #fff;
 
     .timetable_header_route_name {
       grid-area: 1 / 1 / 2 / 2;
-
-      background-color: #354f9b;
 
       padding-top: 5pt;
       padding-left: 9pt;
@@ -26,8 +25,6 @@
     .timetable_header_description {
       grid-area: 2 / 1 / 3 / 2;
 
-      background-color: #354f9b;
-
       padding-left: 9pt;
       padding-bottom: 5pt;
       line-height: 130%;
@@ -38,10 +35,18 @@
       }
     }
 
-    .timetable_header_qr_description {
+    .timetable_header_usage_guide {
       grid-area: 1 / 2 / 3 / 3;
 
-      background-color: #354f9b;
+      display: inherit;
+
+      position: relative;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .timetable_header_qr_description {
+      grid-area: 1 / 3 / 3 / 4;
 
       padding: 0 5pt;
 
@@ -53,14 +58,22 @@
       .center {
         position: relative;
         top: 50%;
-        transform: translateY(-50%);;
+        transform: translateY(-50%);
       }
     }
 
     .timetable_header_qr {
-      grid-area: 1 / 3 / 3 / 4;
+      grid-area: 1 / 4 / 3 / 5;
 
       display: inherit;
+
+      background-color: #fff;
+
+      canvas {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+      }
     }
   }
 

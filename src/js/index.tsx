@@ -16,6 +16,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { pageView } from './google_analytics';
 
+import * as explanationIng from "../images/explanation.png"
+
 function App() {
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
@@ -196,7 +198,7 @@ function App() {
           options={toSearchName === '' ? [] : toStops}
           isOptionEqualToValue={(option, value) => option.key === value.key}
           filterOptions={v => v}
-          renderInput={(params) => (<TextField {...params} label="停車地" />)}
+          renderInput={(params) => (<TextField {...params} label="到着地" />)}
           inputValue={toSearchName}
           onInputChange={(event, value, reason) => {
             if (event === null) return
@@ -230,14 +232,15 @@ function App() {
         <div>SafariやFirefoxをお使いの方は、約70%に縮小して印刷することをおすすめします。</div>
       </div>
       {
-        selectedFrom && selectedTo &&
-        <div ref={componentRef} >
-          <TimetableTable
-            fromStop={{ label: selectedFrom.label, key: selectedFrom.key, uids: selectedFrom.value }}
-            toStop={{ label: selectedTo.label, key: selectedTo.key, uids: selectedTo.value }}
-            checkboxes={{ destination: destinationCheckbox, routeId: routeIdCheckbox, companyName: companyNameCheckbox }}
-          />
-        </div>
+        selectedFrom && selectedTo ?
+          <div ref={componentRef} >
+            <TimetableTable
+              fromStop={{ label: selectedFrom.label, key: selectedFrom.key, uids: selectedFrom.value }}
+              toStop={{ label: selectedTo.label, key: selectedTo.key, uids: selectedTo.value }}
+              checkboxes={{ destination: destinationCheckbox, routeId: routeIdCheckbox, companyName: companyNameCheckbox }}
+            />
+          </div> :
+          <img src={explanationIng} />
       }
     </>
   )
