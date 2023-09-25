@@ -226,7 +226,7 @@ function App() {
           flexDirection: 'row',
         }} >
           <FormControlLabel control={<Checkbox checked={destinationCheckbox} onChange={(event) => setDestinationCheckbox(event.target.checked)} />} label="行先" />
-          <FormControlLabel control={<Checkbox checked={routeIdCheckbox} onChange={(event) => setRouteIdCheckbox(event.target.checked)} />} label="路線番号" />
+          <FormControlLabel control={<Checkbox checked={routeIdCheckbox} onChange={(event) => setRouteIdCheckbox(event.target.checked)} />} label="案内番号" />
           <FormControlLabel control={<Checkbox checked={companyNameCheckbox} onChange={(event) => setCompanyNameCheckbox(event.target.checked)} />} label="会社名" />
         </FormGroup>
         <div>SafariやFirefoxをお使いの方は、約70%に縮小して印刷することをおすすめします。</div>
