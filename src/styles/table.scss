@@ -1,5 +1,5 @@
 $border_size: 1.2pt;
-$hourSize: 16pt;
+$hourSize: 14pt;
 $hour_width: 30pt;
 
 $weekday_width: 38.1%;
@@ -30,7 +30,7 @@ $sunday_width: 28.57%;
 
       .table_header_col {
         border-left: $border_size solid #000;
-        font-size: 15pt;
+        font-size: 14pt;
 
         .day_name {
           font-weight: bold;
@@ -107,7 +107,7 @@ $sunday_width: 28.57%;
 
         min-height: 30pt;
 
-        padding: 2pt;
+        padding: 0pt 1pt 1pt 1pt;
 
         display: flex;
         flex-wrap: wrap;
@@ -164,7 +164,7 @@ $sunday_width: 28.57%;
         }
 
         &.minute_width_1 {
-          padding-left: 8pt;
+          padding-left: 2pt;
 
           .minute_wrap{
             margin-left: 2pt;
@@ -182,7 +182,7 @@ $sunday_width: 28.57%;
         .minute_wrap {
           position: relative;
 
-          width: 44pt;
+          width: 42pt;
 
           .minute {
             font-size: 16pt;
@@ -211,19 +211,19 @@ $sunday_width: 28.57%;
             position: absolute;
             right: 0;
 
-            transform: translate(1pt, 5pt);
+            transform: translate(1pt, 4pt);
 
             font-size: 11pt;
           }
 
           .route_name {
-            margin-top: -4pt;
-            font-size: 3pt;
+            margin-top: -5pt;
+            font-size: 8pt;
           }
 
           .route_id {
             margin-top: -2pt;
-            font-size: 3pt;
+            font-size: 8pt;
           }
         }
       }
