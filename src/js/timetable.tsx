@@ -52,7 +52,7 @@ function nextDay(type: 'weekday' | 'saturday' | 'holiday') {
   return date;
 }
 
-type TimeTableData = [number, {
+type Minute = {
   uid: string;
   departure: {
     hour: number;
@@ -72,7 +72,8 @@ type TimeTableData = [number, {
     }
   }
   moveTimeSec: number
-}[]]
+}
+type TimeTableData = [number, Minute[]]
 
 function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number][number]) {
   return match(stopTime)
@@ -121,12 +122,12 @@ function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenSto
     .run()
 }
 
-function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number], firstTransit?: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number]) {
+function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number], firstTransit?: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number]): Minute {
   const fromStopTime = stopTimeTransform(transit[0])
   const toStopTime = stopTimeTransform(transit[1])
 
   const routeName = fromStopTime.route.longName ?? ''
-  const routeIds = routeName.includes('：') ? routeName.split('：')[0].split('/') : [fromStopTime.headsign.slice(0, 4)]
+  const routeIds = routeName.includes('：') ? routeName.split('：')[0].split('/') : []
 
   const moveTimeSec = timeStringToSeconds(toStopTime.departure.time) - timeStringToSeconds(fromStopTime.departure.time)
 
@@ -460,13 +461,16 @@ export function TimetableTable(props: {
                       // 中央値×1.5以上 AND 中央値+10以上 → 色づけ　…中央病院、健軍・県庁周りが色づけ
                       const minute_style = moveCenterTimeSec * 1.5 <= minute.moveTimeSec && moveCenterTimeSec + 60 * 10 <= minute.moveTimeSec ? 'long_time' : ''
 
+                      const routeName = minute.route.name.split('（')[0].slice(0, 5)
+                      const routeId = props.checkboxes.destination === false && props.checkboxes.routeId && minute.routeIds.length === 0 ? routeName : minute.routeIds.join('/')
+
                       return (
                         <div key={minute.uid} className="minute_wrap">
                           <div className={`company_name ${props.checkboxes.companyName ? '' : 'none'}`}>{remoteUidMap[minute.remote.uid]}</div>
                           <div className="stop_platform_code">{circleNumberMap[minute.stop.platform.code]}</div>
                           <div className={`minute ${minute_style}`}>{String(minute.departure.minute).padStart(2, '0')}</div>
-                          <div className={`route_name ${props.checkboxes.destination ? '' : 'none'}`}>{minute.route.name.split('（')[0].slice(0, 5)}</div>
-                          <div className={`route_id ${props.checkboxes.routeId ? '' : 'none'}`}>{minute.routeIds.join('/')}</div>
+                          <div className={`route_name ${props.checkboxes.destination ? '' : 'none'}`}>{routeName}</div>
+                          <div className={`route_id ${props.checkboxes.routeId ? '' : 'none'}`}>{routeId}</div>
                         </div>
                       )
                     })}
