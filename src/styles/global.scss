@@ -1,3 +1,5 @@
+$text_width: 960px;
+
 * {
   box-sizing: border-box;
 }
@@ -29,6 +31,20 @@ body {
   .print {
     grid-area: 1 / 3 / 3 / 3;
   }
+}
+
+.header_notice {
+  width: $text_width;
+  font-weight: bold;
+  background-color: #EEE;
+  margin-bottom: 1em;
+  padding: 0.5em;
+}
+
+.credit {
+  font-size: small;
+  width: $text_width;
+  text-align: center;
 }
 
 .none {

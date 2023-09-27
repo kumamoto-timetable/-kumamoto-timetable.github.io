@@ -160,6 +160,9 @@ function App() {
 
   return (
     <>
+      <div className='header_notice'>
+        印刷用のためPCからご利用ください。スマートフォンではレイアウトが乱れます
+      </div>
       <div className='controller'>
         <Autocomplete
           className='fromName'
@@ -229,7 +232,7 @@ function App() {
           <FormControlLabel control={<Checkbox checked={routeIdCheckbox} onChange={(event) => setRouteIdCheckbox(event.target.checked)} />} label="案内番号" />
           <FormControlLabel control={<Checkbox checked={companyNameCheckbox} onChange={(event) => setCompanyNameCheckbox(event.target.checked)} />} label="会社名" />
         </FormGroup>
-        <div>◀の印刷ボタンから、プリンタの拡大・縮小設定でページに合わせて印刷することをおすすめします。</div>
+        <div>◀の印刷ボタンから、プリンタの拡大・縮小設定でページに合わせて印刷しましょう。</div>
       </div>
       {
         selectedFrom && selectedTo ?
@@ -240,7 +243,11 @@ function App() {
               checkboxes={{ destination: destinationCheckbox, routeId: routeIdCheckbox, companyName: companyNameCheckbox }}
             />
           </div> :
-          <img src={explanationIng} />
+          <><img src={explanationIng} />
+          <div className='credit'>開発：<a href='https://t-brain.jp/'>(株)トラフィックブレイン</a>　データ提供：<a href='https://jmpo.kumamoto-toshibus.co.jp/'>共同経営推進室(九州産交バス・産交バス・熊本バス・熊本電鉄・熊本都市バス)</a><br />
+          このサービスは<a href='https://km.bus-vision.jp/kumamoto/view/opendataKuma.html'>熊本のバス5社のGTFSオープンデータ</a>を用いています。
+          </div>
+          </>
       }
     </>
   )
