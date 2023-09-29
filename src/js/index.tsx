@@ -161,7 +161,8 @@ function App() {
   return (
     <>
       <div className='header_notice'>
-        印刷用のためPCからご利用ください。スマートフォンではレイアウトが乱れます
+        印刷用のためPCからご利用ください。<br />
+        スマートフォンからは、<a href='https://km.bus-vision.jp/kumamoto/view/searchStop.html'>バスきたくまさん(バスロケ)</a>、<a href='https://www.google.co.jp/maps/'>Google Maps(経路検索)</a>がおすすめです。
       </div>
       <div className='controller'>
         <Autocomplete
@@ -232,7 +233,7 @@ function App() {
           <FormControlLabel control={<Checkbox checked={routeIdCheckbox} onChange={(event) => setRouteIdCheckbox(event.target.checked)} />} label="案内番号" />
           <FormControlLabel control={<Checkbox checked={companyNameCheckbox} onChange={(event) => setCompanyNameCheckbox(event.target.checked)} />} label="会社名" />
         </FormGroup>
-        <div>◀の印刷ボタンから、プリンタの拡大・縮小設定でページに合わせて印刷しましょう。</div>
+        <div>◀◀印刷ボタンから、プリンタの拡大・縮小設定でページに合わせて印刷しましょう。</div>
       </div>
       {
         selectedFrom && selectedTo ?
