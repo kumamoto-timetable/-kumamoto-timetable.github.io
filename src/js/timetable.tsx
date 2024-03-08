@@ -7,6 +7,7 @@ import { match } from 'ts-pattern'
 import holidayJp from '@holiday-jp/holiday_jp'
 
 import { useTimetableForBetweenStopsQuery } from "../graphql/generated/graphql";
+import { useTimetable } from "./use_timetable";
 import { timeStringToSeconds } from "./utils";
 
 import * as usageGuideImg from "../images/usage_guide.png"
@@ -256,58 +257,30 @@ export function TimetableTable(props: {
 }) {
   const { Canvas } = useQRCode();
 
-  const propsLastChangedAt = useRef<number>(0);
-  const timetableLastChangedAt = useRef<number>(0);
-
-  useEffect(() => {
-    propsLastChangedAt.current = new Date().valueOf();
-  }, [props.fromStop.label, props.toStop.label]);
-
-  const [monday] = useTimetableForBetweenStopsQuery({
-    variables: {
-      conditions: {
-        transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: nextDay('weekday').startOf('day').toISOString()
-      },
-      pagination: {
-        offset: 0,
-        limit: 50
-      }
-    }
+  const { timetable: monday } = useTimetable({
+    fromStopUids: props.fromStop.uids,
+    topStopUids: props.toStop.uids,
+    date: useMemo(() => nextDay('weekday').startOf('day'), [])
   })
-  const [saturday] = useTimetableForBetweenStopsQuery({
-    variables: {
-      conditions: {
-        transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: nextDay('saturday').startOf('day').toISOString()
-      },
-      pagination: {
-        offset: 0,
-        limit: 50
-      }
-    }
+  const { timetable: saturday } = useTimetable({
+    fromStopUids: props.fromStop.uids,
+    topStopUids: props.toStop.uids,
+    date: useMemo(() => nextDay('saturday').startOf('day'), [])
   })
-  const [sunday] = useTimetableForBetweenStopsQuery({
-    variables: {
-      conditions: {
-        transitStopUids: [props.fromStop.uids, props.toStop.uids],
-        date: nextDay('holiday').startOf('day').toISOString()
-      },
-      pagination: {
-        offset: 0,
-        limit: 50
-      }
-    }
+  const { timetable: sunday } = useTimetable({
+    fromStopUids: props.fromStop.uids,
+    topStopUids: props.toStop.uids,
+    date: useMemo(() => nextDay('holiday').startOf('day'), [])
   })
 
   const timetables = useMemo(() => {
-    if (isNullable(monday.data) || isNullable(saturday.data) || isNullable(sunday.data)) return null
-    if (monday.data.timetable.totalCount === 0 && saturday.data.timetable.totalCount === 0 && sunday.data.timetable.totalCount === 0) return []
+    if (isNullable(monday) || isNullable(saturday) || isNullable(sunday)) return null
+    if (monday.length === 0 && saturday.length === 0 && sunday.length === 0) return []
 
     const days = [
-      timetableArray((monday.data?.timetable.edges ?? []).map((transit) => transform(transit, monday.data.timetable.edges[0]))) as TimeTableData[],
-      timetableArray((saturday.data?.timetable.edges ?? []).map((transit) => transform(transit, saturday.data?.timetable.edges[0]))) as TimeTableData[],
-      timetableArray((sunday.data?.timetable.edges ?? []).map((transit) => transform(transit, sunday.data?.timetable.edges[0]))) as TimeTableData[],
+      timetableArray((monday ?? []).map((transit) => transform(transit, monday[0]))) as TimeTableData[],
+      timetableArray((saturday ?? []).map((transit) => transform(transit, saturday[0]))) as TimeTableData[],
+      timetableArray((sunday ?? []).map((transit) => transform(transit, sunday[0]))) as TimeTableData[],
     ]
 
     let minHour = 23
@@ -346,16 +319,16 @@ export function TimetableTable(props: {
       result.push([days[0][i][0], [days[0][i][1], days[1][i][1], days[2][i][1]]])
     ])
     return result
-  }, [monday.data, saturday.data, sunday.data])
+  }, [monday, saturday, sunday])
 
   const moveCenterTimeSec = useMemo(() => {
-    if (isNullable(monday.data) || isNullable(saturday.data) || isNullable(sunday.data)) return null
+    if (isNullable(monday) || isNullable(saturday) || isNullable(sunday)) return null
 
     const moveCenterTimes =
       [
-        ...(monday.data?.timetable.edges ?? []),
-        ...(saturday.data?.timetable.edges ?? []),
-        ...(sunday.data?.timetable.edges ?? [])
+        ...monday,
+        ...saturday,
+        ...sunday
       ].map((transit) => transform(transit).moveTimeSec).sort((a, b) => a - b)
 
     const half = Math.floor(moveCenterTimes.length / 2);
@@ -365,13 +338,9 @@ export function TimetableTable(props: {
     } else {
       return (moveCenterTimes[half - 1] + moveCenterTimes[half]) / 2;
     }
-  }, [monday.data, saturday.data, sunday.data])
+  }, [monday, saturday, sunday])
 
-  useEffect(() => {
-    timetableLastChangedAt.current = new Date().valueOf();
-  }, [timetables, moveCenterTimeSec]);
-
-  if (timetables === null || timetableLastChangedAt.current < propsLastChangedAt.current)
+  if (timetables === null)
     return (
       <div>
         時刻表を生成中です... しばらくお待ち下さい
