@@ -43,8 +43,8 @@ export const useTimetable = (props: Props) => {
   const [refresh, setRefresh] = useState(new Date().valueOf())
 
   const [offset, setOffset] = useState(0)
-  const tmpTimetable = useRef([])
-  const [timetable, setTimetable] = useState(null)
+  const tmpTimetable = useRef<ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number][]>([])
+  const [timetable, setTimetable] = useState<ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number][]>(null)
 
   const queryParameter = useMemo(() => generateExecuteVariables(
     props,

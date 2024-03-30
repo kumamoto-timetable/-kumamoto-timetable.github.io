@@ -1,21 +1,17 @@
-query Remotes(
-  $where: RemoteSearchConditions!
-  $pagination: RemotePaginationOptions!
-  $versionsPagination: VersionPaginationOptions!
-  $versionOrder: VersionOrder!
+query FindAgencies(
+  $conditions: AgencySearchConditions!
+  $pagination: AgencyPaginationOptions!
 ) {
-  findRemotes(conditions: $where, pagination: $pagination) {
+  findAgencies(conditions: $conditions, pagination: $pagination) {
     totalCount
     pageInfo {
       hasNextPage
       hasPreviousPage
     }
     edges {
-      versions(pagination: $versionsPagination, order: $versionOrder) {
-        edges {
-          uid
-        }
-      }
+      uid
+      id
+      name
     }
   }
 }
@@ -26,7 +22,11 @@ query NormalizedStops(
   $options: NormalizedStopSearchOption!
   $stopsOptions: StopSearchOption!
 ) {
-  searchNormalizedStops(pagination: $pagination, conditions: $where, options: $options) {
+  searchNormalizedStops(
+    pagination: $pagination
+    conditions: $where
+    options: $options
+  ) {
     totalCount
     pageInfo {
       hasPreviousPage
@@ -37,18 +37,19 @@ query NormalizedStops(
       name
       stops(options: $stopsOptions) {
         edges {
-          ... on StopInfo {
-            uid
-            id
-            name
-          }
+          uid
+          id
+          name
         }
       }
     }
   }
 }
 
-query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: TimetablePaginationOptions!) {
+query TimetableForBetweenStops(
+  $conditions: TimetableSearch!
+  $pagination: TimetablePaginationOptions!
+) {
   timetable(conditions: $conditions, pagination: $pagination) {
     totalCount
     pageInfo {
@@ -56,81 +57,29 @@ query TimetableForBetweenStops($conditions: TimetableSearch!, $pagination: Timet
       hasNextPage
     }
     edges {
-... on StopTimeArrivalInfo {
-        uid
-        headsign
+      trip {
+        id
         route {
           uid
+          shortName
           longName
-        }
-        a_arrival: arrival {
-          time
-        }
-        a_departure: departure {
-          time
-        }
-        remoteVersion {
-          remote {
-            uid
-          }
-        }
-        stop {
-          ... on StopInfo {
-            platform {
-              code
-            }
-          }
         }
       }
-      ... on StopTimeDepartureInfo {
+      stopTimes {
         uid
+        sequence
         headsign
-        route {
-          uid
-          longName
-        }
-        d_arrival: arrival {
-          time
-        }
-        d_departure: departure {
-          time
+        departureTime
+        stop {
+          name
+          platform {
+            code
+          }
         }
         remoteVersion {
           remote {
             uid
-          }
-        }
-        stop {
-          ... on StopInfo {
-            platform {
-              code
-            }
-          }
-        }
-      }
-      ... on StopTimeInfo {
-        uid
-        headsign
-        route {
-          uid
-          longName
-        }
-        arrival {
-          time
-        }
-        departure {
-          time
-        }
-        remoteVersion {
-          remote {
-            uid
-          }
-        }
-        stop {
-          ... on StopInfo {
-            platform {
-              code
-            }
+            name
           }
         }
       }

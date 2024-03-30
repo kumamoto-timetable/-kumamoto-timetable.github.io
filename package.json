@@ -18,6 +18,7 @@
     "@graphql-codegen/typescript-urql": "^3.7.1",
     "@holiday-jp/holiday_jp": "^2.4.0",
     "@mui/material": "^5.14.0",
+    "caniuse-lite": "^1.0.30001600",
     "dayjs": "^1.11.8",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
@@ -27,7 +28,6 @@
     "react-dom": "^18.2.0",
     "react-select": "^5.7.0",
     "react-to-print": "^2.14.7",
-    "ts-pattern": "^4.0.5",
     "urql": "^3.0.3"
   },
   "devDependencies": {

@@ -3,7 +3,6 @@ import utc from 'dayjs/plugin/utc'
 import React, { useEffect, useRef } from "react";
 import { useMemo } from "react";
 import { useQRCode } from 'next-qrcode';
-import { match } from 'ts-pattern'
 import holidayJp from '@holiday-jp/holiday_jp'
 
 import { useTimetableForBetweenStopsQuery } from "../graphql/generated/graphql";
@@ -76,77 +75,47 @@ type Minute = {
 }
 type TimeTableData = [number, Minute[]]
 
-function stopTimeTransform(stopTime: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number][number]) {
-  return match(stopTime)
-    .with({ __typename: 'StopTimeArrivalInfo' }, stopTime => ({
-      uid: stopTime.uid,
-      departure: stopTime.a_departure,
-      route: stopTime.route,
-      headsign: stopTime.headsign,
-      remote: {
-        uid: stopTime.remoteVersion.remote.uid
-      },
-      stop: {
-        platform: {
-          code: stopTime.stop.platform?.code ?? null
-        }
+function stopTimeTransform(trip: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number]['trip'], stopTime: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number]['stopTimes'][number]) {
+  return {
+    uid: stopTime.uid,
+    departure: stopTime.departureTime,
+    route: trip.route,
+    headsign: stopTime.headsign,
+    remote: {
+      uid: stopTime.remoteVersion.remote.uid
+    },
+    stop: {
+      platform: {
+        code: stopTime.stop.platform?.code ?? null
       }
-    }))
-    .with({ __typename: 'StopTimeDepartureInfo' }, stopTime => ({
-      uid: stopTime.uid,
-      departure: stopTime.d_departure,
-      route: stopTime.route,
-      headsign: stopTime.headsign,
-      remote: {
-        uid: stopTime.remoteVersion.remote.uid
-      },
-      stop: {
-        platform: {
-          code: stopTime.stop.platform?.code ?? null
-        }
-      }
-    }))
-    .with({ __typename: 'StopTimeInfo' }, stopTime => ({
-      uid: stopTime.uid,
-      departure: stopTime.departure,
-      route: stopTime.route,
-      headsign: stopTime.headsign,
-      remote: {
-        uid: stopTime.remoteVersion.remote.uid
-      },
-      stop: {
-        platform: {
-          code: stopTime.stop.platform?.code ?? null
-        }
-      }
-    }))
-    .run()
+    }
+  }
 }
 
 function transform(transit: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number], firstTransit?: ReturnType<typeof useTimetableForBetweenStopsQuery>[0]['data']['timetable']['edges'][number]): Minute {
-  const fromStopTime = stopTimeTransform(transit[0])
-  const toStopTime = stopTimeTransform(transit[1])
+  const fromStopTime = stopTimeTransform(transit.trip, transit.stopTimes[0])
+  const toStopTime = stopTimeTransform(transit.trip, transit.stopTimes[1])
 
   const routeName = fromStopTime.route.longName ?? ''
   const routeIds = routeName.includes('：') ? routeName.split('：')[0].split('/') : []
 
-  const moveTimeSec = timeStringToSeconds(toStopTime.departure.time) - timeStringToSeconds(fromStopTime.departure.time)
+  const moveTimeSec = timeStringToSeconds(toStopTime.departure) - timeStringToSeconds(fromStopTime.departure)
 
   let hour = 0
   if (firstTransit) {
-    const firstFromStopTime = stopTimeTransform(firstTransit[0])
-    const diffHour = dayjs(fromStopTime.departure.time).startOf('h').diff(dayjs(firstFromStopTime.departure.time).startOf('h'), 'hour')
+    const firstFromStopTime = stopTimeTransform(firstTransit.trip, firstTransit.stopTimes[1])
+    const diffHour = dayjs(fromStopTime.departure).startOf('h').diff(dayjs(firstFromStopTime.departure).startOf('h'), 'hour')
 
-    hour = dayjs(firstFromStopTime.departure.time).hour() + diffHour
+    hour = dayjs(firstFromStopTime.departure).hour() + diffHour
   } else {
-    hour = dayjs(fromStopTime.departure.time).hour()
+    hour = dayjs(fromStopTime.departure).hour()
   }
 
   return {
     uid: fromStopTime.uid,
     departure: {
       hour: hour,
-      minute: dayjs(fromStopTime.departure.time).minute(),
+      minute: dayjs(fromStopTime.departure).minute(),
     },
     routeIds: routeIds,
     route: {

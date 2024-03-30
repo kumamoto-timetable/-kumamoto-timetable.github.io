@@ -20,6 +20,44 @@ export type AccessCredential = {
   access_token: Scalars['String'];
 };
 
+export type AgencyInfo = {
+  __typename?: 'AgencyInfo';
+  createdAt: Scalars['String'];
+  email?: Maybe<Scalars['String']>;
+  fareUrl?: Maybe<Scalars['String']>;
+  id: Scalars['String'];
+  lang?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  phone?: Maybe<Scalars['String']>;
+  timezone: Scalars['String'];
+  uid: Scalars['String'];
+  url: Scalars['String'];
+  versions: VersionPagination;
+};
+
+
+export type AgencyInfoVersionsArgs = {
+  order: VersionOrder;
+  pagination: VersionPaginationOptions;
+};
+
+export type AgencyPagination = {
+  __typename?: 'AgencyPagination';
+  edges: Array<AgencyInfo>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
+};
+
+export type AgencyPaginationOptions = {
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+};
+
+export type AgencySearchConditions = {
+  agencyIds?: InputMaybe<Array<Scalars['String']>>;
+  name?: InputMaybe<Scalars['String']>;
+};
+
 export type AuthCredential = {
   __typename?: 'AuthCredential';
   access_token: Scalars['String'];
@@ -88,14 +126,43 @@ export type NormalizedStopPaginationOptions = {
 };
 
 export type NormalizedStopSearchCondition = {
+  agencyUids: Array<Scalars['String']>;
   key?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
-  remoteVersionUids: Array<Scalars['String']>;
 };
 
 export type NormalizedStopSearchOption = {
   groupBy: NormalizeType;
   languages: Array<Language>;
+};
+
+export type OperationVehicleAccessibilityInfo = {
+  __typename?: 'OperationVehicleAccessibilityInfo';
+  wheelchair?: Maybe<Scalars['String']>;
+};
+
+export type OperationVehicleCurrentStopInfo = {
+  __typename?: 'OperationVehicleCurrentStopInfo';
+  status: Scalars['String'];
+  stopTime: StopTimeInfo;
+};
+
+export type OperationVehicleInfo = {
+  __typename?: 'OperationVehicleInfo';
+  accessibility: OperationVehicleAccessibilityInfo;
+  currentStop: OperationVehicleCurrentStopInfo;
+  delay: Scalars['Float'];
+  id: Scalars['String'];
+  label?: Maybe<Scalars['String']>;
+  licensePlate?: Maybe<Scalars['String']>;
+  occupancyStatus?: Maybe<Scalars['String']>;
+  position?: Maybe<OperationVehiclePositionInfo>;
+};
+
+export type OperationVehiclePositionInfo = {
+  __typename?: 'OperationVehiclePositionInfo';
+  lat: Scalars['Float'];
+  lon: Scalars['Float'];
 };
 
 export enum Order {
@@ -116,9 +183,16 @@ export type PlatformInfo = {
 
 export type Query = {
   __typename?: 'Query';
+  findAgencies: AgencyPagination;
   findRemotes: RemotePagination;
   searchNormalizedStops: NormalizedStopPagination;
   timetable: TimetablePagination;
+};
+
+
+export type QueryFindAgenciesArgs = {
+  conditions: AgencySearchConditions;
+  pagination: AgencyPaginationOptions;
 };
 
 
@@ -178,6 +252,7 @@ export type RemoteSearchConditions = {
 export type RouteInfo = {
   __typename?: 'RouteInfo';
   longName?: Maybe<Scalars['String']>;
+  shortName?: Maybe<Scalars['String']>;
   uid: Scalars['String'];
 };
 
@@ -197,7 +272,7 @@ export type StopInfo = {
 
 export type StopPagination = {
   __typename?: 'StopPagination';
-  edges: Array<StopUnion>;
+  edges: Array<StopInfo>;
   pageInfo: PageInfo;
   totalCount: Scalars['Int'];
 };
@@ -206,42 +281,16 @@ export type StopSearchOption = {
   languages: Array<Language>;
 };
 
-export type StopTimeArrivalInfo = {
-  __typename?: 'StopTimeArrivalInfo';
-  arrival: Time;
-  departure?: Maybe<Time>;
-  headsign?: Maybe<Scalars['String']>;
-  remoteVersion: VersionInfo;
-  route: RouteInfo;
-  stop: StopUnion;
-  uid: Scalars['String'];
-};
-
-export type StopTimeDepartureInfo = {
-  __typename?: 'StopTimeDepartureInfo';
-  arrival?: Maybe<Time>;
-  departure: Time;
-  headsign?: Maybe<Scalars['String']>;
-  remoteVersion: VersionInfo;
-  route: RouteInfo;
-  stop: StopUnion;
-  uid: Scalars['String'];
-};
-
 export type StopTimeInfo = {
   __typename?: 'StopTimeInfo';
-  arrival: Time;
-  departure: Time;
+  arrivalTime: Scalars['String'];
+  departureTime: Scalars['String'];
   headsign?: Maybe<Scalars['String']>;
   remoteVersion: VersionInfo;
-  route: RouteInfo;
-  stop: StopUnion;
+  sequence: Scalars['Float'];
+  stop: StopInfo;
   uid: Scalars['String'];
 };
-
-export type StopTimeUnion = StopTimeArrivalInfo | StopTimeDepartureInfo | StopTimeInfo;
-
-export type StopUnion = StopInfo;
 
 export enum SupportType {
   Agency = 'AGENCY',
@@ -263,14 +312,9 @@ export enum SupportType {
   Trip = 'TRIP'
 }
 
-export type Time = {
-  __typename?: 'Time';
-  time: Scalars['String'];
-};
-
 export type TimetablePagination = {
   __typename?: 'TimetablePagination';
-  edges: Array<Array<StopTimeUnion>>;
+  edges: Array<TimetableRowWithRealtimeInfo>;
   pageInfo: PageInfo;
   totalCount: Scalars['Int'];
 };
@@ -280,9 +324,24 @@ export type TimetablePaginationOptions = {
   offset?: InputMaybe<Scalars['Int']>;
 };
 
+export type TimetableRowWithRealtimeInfo = {
+  __typename?: 'TimetableRowWithRealtimeInfo';
+  stopTimes: Array<StopTimeInfo>;
+  trip: TripInfo;
+  vehicle?: Maybe<OperationVehicleInfo>;
+};
+
 export type TimetableSearch = {
   date: Scalars['String'];
   transitStopUids: Array<Array<Scalars['String']>>;
+};
+
+export type TripInfo = {
+  __typename?: 'TripInfo';
+  accessibility: OperationVehicleAccessibilityInfo;
+  id: Scalars['String'];
+  route: RouteInfo;
+  uid: Scalars['String'];
 };
 
 export type UserInfo = {
@@ -294,6 +353,7 @@ export type VersionInfo = {
   __typename?: 'VersionInfo';
   created_at: Scalars['String'];
   data_portal_url: Scalars['String'];
+  name: Scalars['String'];
   realtime_data_urls: Array<Scalars['String']>;
   remote: RemoteInfo;
   static_data_url: Scalars['String'];
@@ -328,15 +388,13 @@ export enum WheelchairBoarding {
   NoInformation = 'NO_INFORMATION'
 }
 
-export type RemotesQueryVariables = Exact<{
-  where: RemoteSearchConditions;
-  pagination: RemotePaginationOptions;
-  versionsPagination: VersionPaginationOptions;
-  versionOrder: VersionOrder;
+export type FindAgenciesQueryVariables = Exact<{
+  conditions: AgencySearchConditions;
+  pagination: AgencyPaginationOptions;
 }>;
 
 
-export type RemotesQuery = { __typename?: 'Query', findRemotes: { __typename?: 'RemotePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean }, edges: Array<{ __typename?: 'RemoteInfo', versions: { __typename?: 'VersionPagination', edges: Array<{ __typename?: 'VersionInfo', uid: string }> } }> } };
+export type FindAgenciesQuery = { __typename?: 'Query', findAgencies: { __typename?: 'AgencyPagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean }, edges: Array<{ __typename?: 'AgencyInfo', uid: string, id: string, name: string }> } };
 
 export type NormalizedStopsQueryVariables = Exact<{
   pagination: NormalizedStopPaginationOptions;
@@ -354,30 +412,28 @@ export type TimetableForBetweenStopsQueryVariables = Exact<{
 }>;
 
 
-export type TimetableForBetweenStopsQuery = { __typename?: 'Query', timetable: { __typename?: 'TimetablePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean }, edges: Array<Array<{ __typename?: 'StopTimeArrivalInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, a_arrival: { __typename?: 'Time', time: string }, a_departure?: { __typename?: 'Time', time: string } | null, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string } }, stop: { __typename?: 'StopInfo', platform?: { __typename?: 'PlatformInfo', code?: string | null } | null } } | { __typename?: 'StopTimeDepartureInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, d_arrival?: { __typename?: 'Time', time: string } | null, d_departure: { __typename?: 'Time', time: string }, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string } }, stop: { __typename?: 'StopInfo', platform?: { __typename?: 'PlatformInfo', code?: string | null } | null } } | { __typename?: 'StopTimeInfo', uid: string, headsign?: string | null, route: { __typename?: 'RouteInfo', uid: string, longName?: string | null }, arrival: { __typename?: 'Time', time: string }, departure: { __typename?: 'Time', time: string }, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string } }, stop: { __typename?: 'StopInfo', platform?: { __typename?: 'PlatformInfo', code?: string | null } | null } }>> } };
+export type TimetableForBetweenStopsQuery = { __typename?: 'Query', timetable: { __typename?: 'TimetablePagination', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean }, edges: Array<{ __typename?: 'TimetableRowWithRealtimeInfo', trip: { __typename?: 'TripInfo', id: string, route: { __typename?: 'RouteInfo', uid: string, shortName?: string | null, longName?: string | null } }, stopTimes: Array<{ __typename?: 'StopTimeInfo', uid: string, sequence: number, headsign?: string | null, departureTime: string, stop: { __typename?: 'StopInfo', name: string, platform?: { __typename?: 'PlatformInfo', code?: string | null } | null }, remoteVersion: { __typename?: 'VersionInfo', remote: { __typename?: 'RemoteInfo', uid: string, name: string } } }> }> } };
 
 
-export const RemotesDocument = gql`
-    query Remotes($where: RemoteSearchConditions!, $pagination: RemotePaginationOptions!, $versionsPagination: VersionPaginationOptions!, $versionOrder: VersionOrder!) {
-  findRemotes(conditions: $where, pagination: $pagination) {
+export const FindAgenciesDocument = gql`
+    query FindAgencies($conditions: AgencySearchConditions!, $pagination: AgencyPaginationOptions!) {
+  findAgencies(conditions: $conditions, pagination: $pagination) {
     totalCount
     pageInfo {
       hasNextPage
       hasPreviousPage
     }
     edges {
-      versions(pagination: $versionsPagination, order: $versionOrder) {
-        edges {
-          uid
-        }
-      }
+      uid
+      id
+      name
     }
   }
 }
     `;
 
-export function useRemotesQuery(options: Omit<Urql.UseQueryArgs<RemotesQueryVariables>, 'query'>) {
-  return Urql.useQuery<RemotesQuery, RemotesQueryVariables>({ query: RemotesDocument, ...options });
+export function useFindAgenciesQuery(options: Omit<Urql.UseQueryArgs<FindAgenciesQueryVariables>, 'query'>) {
+  return Urql.useQuery<FindAgenciesQuery, FindAgenciesQueryVariables>({ query: FindAgenciesDocument, ...options });
 };
 export const NormalizedStopsDocument = gql`
     query NormalizedStops($pagination: NormalizedStopPaginationOptions!, $where: NormalizedStopSearchCondition!, $options: NormalizedStopSearchOption!, $stopsOptions: StopSearchOption!) {
@@ -396,11 +452,9 @@ export const NormalizedStopsDocument = gql`
       name
       stops(options: $stopsOptions) {
         edges {
-          ... on StopInfo {
-            uid
-            id
-            name
-          }
+          uid
+          id
+          name
         }
       }
     }
@@ -420,81 +474,29 @@ export const TimetableForBetweenStopsDocument = gql`
       hasNextPage
     }
     edges {
-      ... on StopTimeArrivalInfo {
-        uid
-        headsign
+      trip {
+        id
         route {
           uid
+          shortName
           longName
-        }
-        a_arrival: arrival {
-          time
-        }
-        a_departure: departure {
-          time
-        }
-        remoteVersion {
-          remote {
-            uid
-          }
-        }
-        stop {
-          ... on StopInfo {
-            platform {
-              code
-            }
-          }
         }
       }
-      ... on StopTimeDepartureInfo {
+      stopTimes {
         uid
+        sequence
         headsign
-        route {
-          uid
-          longName
-        }
-        d_arrival: arrival {
-          time
-        }
-        d_departure: departure {
-          time
+        departureTime
+        stop {
+          name
+          platform {
+            code
+          }
         }
         remoteVersion {
           remote {
             uid
-          }
-        }
-        stop {
-          ... on StopInfo {
-            platform {
-              code
-            }
-          }
-        }
-      }
-      ... on StopTimeInfo {
-        uid
-        headsign
-        route {
-          uid
-          longName
-        }
-        arrival {
-          time
-        }
-        departure {
-          time
-        }
-        remoteVersion {
-          remote {
-            uid
-          }
-        }
-        stop {
-          ... on StopInfo {
-            platform {
-              code
-            }
+            name
           }
         }
       }

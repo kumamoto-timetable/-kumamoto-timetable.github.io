@@ -9,7 +9,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 
 import { accessTarget } from './access_target'
 
-import { Language, NormalizeType, Order, useNormalizedStopsQuery, useRemotesQuery, VersionOrderColumn } from '../graphql/generated/graphql'
+import { Language, NormalizeType, Order, useNormalizedStopsQuery, useFindAgenciesQuery, VersionOrderColumn } from '../graphql/generated/graphql'
 import { TimetableTable } from './timetable'
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -65,29 +65,20 @@ function App() {
     setSelectedToKey(selectedFrom)
   }, [fromSearchName, selectedFrom, toSearchName, selectedTo])
 
-  const [remotes] = useRemotesQuery({
+  const [remotes] = useFindAgenciesQuery({
     variables: {
-      where: {
-        remoteUids: accessTarget.remoteUids
+      conditions: {
+        agencyIds: accessTarget.agencyIds,
       },
-      pagination: {
-      },
-      versionsPagination: {
-        offset: 0,
-        limit: 1
-      },
-      versionOrder: {
-        column: VersionOrderColumn.CreatedAt,
-        order: Order.Desc
-      }
+      pagination: {}
     }
   })
-  const remoteUids = useMemo(() => remotes.data?.findRemotes.edges.map(remote => remote.versions.edges[0]?.uid).filter(e => e !== undefined) ?? [], [remotes.data])
+  const agencyUids = useMemo(() => remotes.data?.findAgencies.edges.map(remote => remote.uid) ?? [], [remotes.data])
 
   const [fromNormalizedStops] = useNormalizedStopsQuery({
     variables: {
       where: {
-        remoteVersionUids: remoteUids,
+        agencyUids: agencyUids,
         name: fromSearchName,
       },
       options: {
@@ -106,7 +97,7 @@ function App() {
   const [toNormalizedStops] = useNormalizedStopsQuery({
     variables: {
       where: {
-        remoteVersionUids: remoteUids,
+        agencyUids: agencyUids,
         name: toSearchName,
       },
       options: {
@@ -245,9 +236,9 @@ function App() {
             />
           </div> :
           <><img src={explanationIng} />
-          <div className='credit'>開発：<a href='https://t-brain.jp/'>(株)トラフィックブレイン</a>　データ提供：<a href='https://jmpo.kumamoto-toshibus.co.jp/'>共同経営推進室(九州産交バス・産交バス・熊本バス・熊本電鉄・熊本都市バス)</a><br />
-          このサービスは<a href='https://km.bus-vision.jp/kumamoto/view/opendataKuma.html'>熊本のバス5社のGTFSオープンデータ</a>を用いています。
-          </div>
+            <div className='credit'>開発：<a href='https://t-brain.jp/'>(株)トラフィックブレイン</a>　データ提供：<a href='https://jmpo.kumamoto-toshibus.co.jp/'>共同経営推進室(九州産交バス・産交バス・熊本バス・熊本電鉄・熊本都市バス)</a><br />
+              このサービスは<a href='https://km.bus-vision.jp/kumamoto/view/opendataKuma.html'>熊本のバス5社のGTFSオープンデータ</a>を用いています。
+            </div>
           </>
       }
     </>
